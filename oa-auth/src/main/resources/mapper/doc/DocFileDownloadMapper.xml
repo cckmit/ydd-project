@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydw.oa.auth.business.doc.mapper.DocFileDownloadMapper">
+
+	<select id="query" resultType="java.util.HashMap">
+		select 
+		t.OBJECT_ID objectId,t.STATUZ downloadStatuz,t.DOWNLOAD_TIME downloadTime,t1.FILE_ID fileId,t1.CREATE_TIME uploadTime,
+		t1.NAME fileName,t2.REAL_NAME downloadName,t3.REAL_NAME uploadName,t4.NAME deptName
+		from doc_file_download t
+		left join doc_file t1 on t.DOC_FILE_ID=t1.OBJECT_ID  and t1.IS_DELETED = 0
+		left join t_au_usr t2 on t.USR_ID = t2.OBJECT_ID and t2.IS_DELETED = 0
+		left join t_au_usr t3 on t1.CREATE_USR_ID = t3.OBJECT_ID and t3.IS_DELETED = 0
+		left join t_au_dept t4 on t1.DETP_ID = t4.OBJECT_ID and t4.IS_DELETED = 0
+		${ew.customSqlSegment}
+	</select>
+	<select id="queryUserByDocFileId" resultType="java.util.HashMap">
+		select
+		t.OBJECT_ID objectId,t.USR_ID usrId,t1.REAL_NAME usrName
+		from doc_file_download t
+		inner join t_au_usr t1 on t.USR_ID = t1.OBJECT_ID
+		where t.DOC_FILE_ID=#{docFileId} and t.IS_DELETED = 0
+	</select>
+
+</mapper>

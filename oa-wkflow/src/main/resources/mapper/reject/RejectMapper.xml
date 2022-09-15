@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydw.oa.wkflow.business_main.reject.mapper.RejectMapper">
+
+<select id="query" resultType="java.util.HashMap">
+	select t.OBJECT_ID objectId,t.PID processInstanceId,t.START_TIME startTime,t.REJECT_TIME rejectTime,t.REJECT_TYPE rejectType,
+	t.REASON reason,t2.NAME_ procdefName,t3.REAL_NAME realName
+	from t_reject t 
+	left join act_hi_procinst t1 on t.PID = t1.PROC_INST_ID_
+	left join act_re_procdef t2 on t1.PROC_DEF_ID_=t2.ID_
+	left join view_t_au_usr t3 on t.REJECT_USR_ID=t3.OBJECT_ID
+	${ew.customSqlSegment}  
+</select>
+	<select id="query2" resultType="java.util.HashMap">
+	select t.OBJECT_ID objectId,t.PID processInstanceId,t.START_TIME startTime,t.REJECT_TIME rejectTime,t.REJECT_TYPE rejectType,
+	t.REASON reason,t2.NAME_ procdefName,t3.REAL_NAME realName
+	from t_reject t
+	left join act_hi_procinst t1 on t.PID = t1.PROC_INST_ID_
+	left join act_re_procdef t2 on t1.PROC_DEF_ID_=t2.ID_
+	left join view_t_au_usr t3 on t.REJECT_USR_ID=t3.OBJECT_ID
+	${ew.customSqlSegment}
+</select>
+	
+</mapper>

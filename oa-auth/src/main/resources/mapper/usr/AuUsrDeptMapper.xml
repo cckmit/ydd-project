@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.ydw.oa.auth.business.usr.mapper.AuUsrDeptMapper">
+
+	<select id="query" resultType="java.util.HashMap">
+		select 
+		g.OBJECT_ID,g.USR_NAME,g.CREATE_TIME,g.EMAIL,g.MOBILE,g.REAL_NAME,g.CERT_NO,g.TYPE,g.STATUS,g.WX_USER_ID
+		from t_au_usr_dept a 
+		right join t_au_usr g on a.USR_ID = g.OBJECT_ID
+		${ew.customSqlSegment}  
+	</select>
+	
+	<select id="deptlist" resultType="java.util.HashMap">
+		select 
+		g.OBJECT_ID,g.NAME
+		from t_au_usr_dept a 
+		right join t_au_dept g on a.DEPT_ID = g.OBJECT_ID
+		${ew.customSqlSegment}  
+	</select>
+	
+	<select id="queryAllNotDept" resultType="java.util.HashMap">
+		select t1.USR_NAME,t1.OBJECT_ID from t_au_usr t1 where t1.OBJECT_ID not in (select t.USR_ID from t_au_usr_dept t ) and t1.IS_DELETED=0
+	</select>
+	
+	<select id="selectDeptInfoList" resultType="java.lang.String">
+		select g.USR_ID from t_au_usr_dept a 
+		right join t_au_dept g on a.DEPT_ID = g.OBJECT_ID
+		${ew.customSqlSegment}
+	</select>
+	
+	<select id="selectDeptManaInfoList" resultType="java.lang.String">
+		select g.DEPT_MANA_USR_ID from t_au_usr_dept a 
+		left join t_au_dept g on a.DEPT_ID = g.OBJECT_ID 
+		${ew.customSqlSegment}
+	</select>
+	
+	<select id="deptUsrListForTree" resultType="java.util.HashMap">
+		select 
+		g.OBJECT_ID,g.OBJECT_ID id,g.OBJECT_ID value,g.REAL_NAME NAME,g.REAL_NAME label 
+		from t_au_usr_dept a 
+		right join t_au_usr g on a.USR_ID = g.OBJECT_ID and g.IS_DELETED = 0
+		${ew.customSqlSegment}  
+	</select>
+	
+	<select id="selectDeptUsrList" resultType="java.lang.String">
+		select a.USR_ID from t_au_usr_dept a 
+		right join t_au_dept g on a.DEPT_ID = g.OBJECT_ID and g.IS_DELETED = 0
+		where g.NAME=#{dept}
+	</select>
+
+	<select id="selectDeptUsrListByDeptId" resultType="java.util.HashMap">
+		select g.OBJECT_ID as value,g.REAL_NAME as label from t_au_usr_dept a
+		right join t_au_usr g on a.USR_ID = g.OBJECT_ID and g.IS_DELETED = 0
+		where a.DEPT_ID=#{deptId}
+	</select>
+	
+	<select id="deptList" resultType="java.lang.String">
+		select a.DEPT_ID from t_au_usr_dept a where a.USR_ID=#{userId}
+	</select>
+</mapper>
+<!-- where a.DEPT_ID =#{dept_id} -->

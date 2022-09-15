@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydw.oa.wechat.mapper.WxClockInMapper">
+
+	<select id="sumWxClockInData" resultType="java.util.HashMap">
+			SELECT userid,clock_in_year_month,SUM(normal_clock_in) normal_clock_in,SUM(be_out) be_out,SUM(ask_leave) ask_leave,SUM(business_trip) business_trip,SUM(arrive_late) arrive_late,SUM(leave_early) leave_early,SUM(card_shortage) card_shortage,SUM(absent) absent FROM t_wx_clock_in
+			GROUP BY userid,clock_in_year_month
+	</select>
+
+	<select id="sumWxClockInDataByUseridAndYearMonth" resultType="java.util.HashMap" parameterType="java.lang.String">
+			SELECT userid,clock_in_year_month,SUM(normal_clock_in) normal_clock_in,SUM(be_out) be_out,SUM(ask_leave) ask_leave,SUM(business_trip) business_trip,SUM(arrive_late) arrive_late,SUM(leave_early) leave_early,SUM(card_shortage) card_shortage,SUM(absent) absent FROM t_wx_clock_in
+			WHERE userid=#{userid} and clock_in_year_month=#{clockInYearMonth}
+			GROUP BY userid,clock_in_year_month
+	</select>
+
+	<select id="sumWxClockInDataByYearMonth" resultType="java.util.HashMap" parameterType="java.lang.String">
+			SELECT userid,clock_in_year_month,SUM(normal_clock_in) normal_clock_in,SUM(be_out) be_out,SUM(ask_leave) ask_leave,SUM(business_trip) business_trip,SUM(arrive_late) arrive_late,SUM(leave_early) leave_early,SUM(card_shortage) card_shortage,SUM(absent) absent FROM t_wx_clock_in
+			WHERE clock_in_year_month=#{clockInYearMonth}
+			GROUP BY userid,clock_in_year_month
+	</select>
+</mapper>

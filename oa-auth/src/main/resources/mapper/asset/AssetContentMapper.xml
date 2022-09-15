@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydw.oa.auth.business.asset.mapper.AssetContentMapper">
+	<select id="query" resultType="java.util.HashMap">
+		select t.OBJECT_ID objectId,t.CODE code,t.NAME name,t.NOTE note,t.STATUZ contentStatuz,t.BUY_USR buyUsr,t.Number number,
+		t.BUY_TIME buyTime,t4.NAME currentUsrDept,t5.REAL_NAME currentUsr,t1.NAME typeName,t3.REAL_NAME buyUsrName
+		from asset_content t 
+		left join asset_type t1 on t.TYPE_ID = t1.OBJECT_ID AND t1.IS_DELETED=0
+		left join t_au_usr t3 on t.BUY_USR=t3.OBJECT_ID AND t3.IS_DELETED=0
+		left join t_au_dept t4 on t.CURRENT_USR_DEPT_ID=t4.OBJECT_ID AND t4.IS_DELETED=0
+		left join t_au_usr t5 on t.CURRENT_USR_ID=t5.OBJECT_ID AND t5.IS_DELETED=0
+		${ew.customSqlSegment}
+	</select>
+</mapper>

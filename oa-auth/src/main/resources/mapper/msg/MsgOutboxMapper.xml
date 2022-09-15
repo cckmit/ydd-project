@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydw.oa.auth.business.msg.mapper.MsgOutboxMapper">
+
+	<select id="query" resultType="java.util.HashMap">
+		select distinct t.OBJECT_ID objectId,t.CREATE_TIME createTime,t.END_TIME endTime,t.TITLE title,t.FILE_ID fileId,t.CONTENT content,t.NEED_REPLY needReply,t.NOTICE_TYPE noticeType,
+		t.START_TIME affairsStartTime,t.END_TIME affairsEndTime,GROUP_CONCAT(t1.REAL_NAME) receivers,t2.REAL_NAME sendUsr 
+		from msg_outbox t 
+		left join t_au_usr t1 on FIND_IN_SET(t1.OBJECT_ID,t.RECEIVE_USR_ID)>0
+		left join t_au_usr t2 on t2.OBJECT_ID=t.SEND_USR_ID
+		${ew.customSqlSegment}
+	</select>
+</mapper>

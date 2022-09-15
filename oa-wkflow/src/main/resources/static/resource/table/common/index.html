@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+  <title>流程审批</title>
+
+  <script src="/oa-wkflow/tablejs/vue/vue.min.js"></script>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="/oa-wkflow/tablejs/element-ui/theme-chalk/index.css">
+  <!-- 引入组件库 -->
+  <script src="/oa-wkflow/tablejs/element-ui/index.js"></script>
+  <script src="/oa-wkflow/tablejs/axios/axios.min.js"></script>
+	<script src="/oa-wkflow/resource/js/html2canvas.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/oa-wkflow/resource/js/jspdf.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/oa-wkflow/resource/js/createPdf.js" type="text/javascript" charset="utf-8"></script>
+<!--  <script src="../../tablejs/designTable/table_bak.js"></script>-->
+  <script src="/oa-wkflow/tablejs/designTable/build.js"></script>
+  <style>
+    html,
+    body {
+      /*height: 100%;*/
+
+    }
+
+    #app {
+      height: 97%;
+      width:93%;
+      text-align:center;
+      margin:auto;
+      margin-top:3%;
+    }
+
+    .table {
+      /* height: 100%; */
+    }
+    .table::-webkit-scrollbar{
+      display: none;
+    }
+
+    .footer {
+      margin: 30px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .footer-item {
+      background: #0f82ff;
+      padding: 10px 25px;
+      color: #ffffff;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .footer-item:active {
+      opacity: 0.8;
+    }
+
+    .dialog {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, .3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .dialog-inner {
+      background-color: #ffffff;
+      width: 100%;
+      border-radius: 10rpx;
+      overflow: hidden;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .dialog-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .el-row {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .dialog-header-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+    }
+
+    .dialog-header-item .el-button {
+      flex: 1;
+      margin-left: 15px;
+    }
+
+    .dialog-header {
+      margin-top: 30px;
+    }
+
+    .dialog-footer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 40px;
+    }
+
+    .dialog-footer .el-button {
+      width: 100%;
+      padding: 15px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="table" ref="table">
+      <generator :json-data="jsonData" />
+    </div>
+
+    <div class="footer" v-if="btnShow">
+      <el-button type="primary" size="small" @click="onSubmit">同意</el-button>
+      <el-button type="primary" size="small" @click="onDisagree">不同意</el-button>
+    </div>
+<!--    <div class="dialog" v-if="dialogVisible">-->
+<!--      <el-row>-->
+<!--        <el-col :xs="20" :md="6">-->
+<!--          <div class="dialog-inner">-->
+<!--            <div class="dialog-title">-->
+<!--              获取验证码-->
+<!--            </div>-->
+<!--            <div class="dialog-header">-->
+<!--              &lt;!&ndash; <div class="dialog-header-item">-->
+<!--                <el-input v-model="phone" :maxlength="11" placeholder="请输入手机号" size="middle"></el-input>-->
+<!--              </div> &ndash;&gt;-->
+<!--              <div class="dialog-header-item">-->
+<!--                <el-input v-model="code" :maxlength="6" placeholder="请输入验证码" size="middle"></el-input>-->
+<!--                <el-button type="primary" :disabled="disabled" plain size="middle" v-text="verifyNumber(count) ? count + 's' : count" @click="getCode"></el-button>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <div class="dialog-footer">-->
+<!--              <el-button size="mini" @click="handleClose">取消</el-button>-->
+<!--              <el-button type="primary" size="mini" @click="verify" >验证</el-button>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </el-col>-->
+<!--      </el-row>-->
+<!--    </div>-->
+<!--    <div class="dialog" v-if="reasonDialogVisible">-->
+<!--      <el-row>-->
+<!--        <el-col :xs="20" :md="6">-->
+<!--          <div class="dialog-inner">-->
+<!--            <div class="dialog-title">-->
+<!--              填写理由-->
+<!--            </div>-->
+<!--            <div class="dialog-header">-->
+<!--              &lt;!&ndash; <div class="dialog-header-item">-->
+<!--                <el-input v-model="phone" :maxlength="11" placeholder="请输入手机号" size="middle"></el-input>-->
+<!--              </div> &ndash;&gt;-->
+<!--              <div class="dialog-header-item">-->
+<!--                <el-input v-model="reason"  placeholder="请输入不同意理由" size="middle"></el-input>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <div class="dialog-footer">-->
+<!--              <el-button size="mini" @click="handleClose">取消</el-button>-->
+<!--              <el-button type="primary" size="mini" @click="refuse">确认</el-button>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </el-col>-->
+<!--      </el-row>-->
+<!--    </div>-->
+    <div class="dialog" v-if="confirmDialogVisible">
+      <el-row>
+        <el-col :xs="20" :md="6">
+          <div class="dialog-inner">
+            <div class="dialog-title">
+              是否拒绝该流程？如需输入补充意见，可在下方输入框添加。
+            </div>
+            <div class="dialog-header-item">
+              <el-input v-model="suggest" size="middle"></el-input>
+            </div>
+            <div class="dialog-footer">
+              <el-button size="mini" @click="handleClose">取消</el-button>
+              <el-button type="primary" size="mini" @click="confirm" :disabled="confirmDisabled">确认</el-button>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+    </div>
+    <div class="dialog" v-if="verifyDialogVisible">
+      <el-row>
+        <el-col :xs="20" :md="6">
+          <div class="dialog-inner">
+            <div class="dialog-title">
+              是否进行签字确认？
+            </div>
+            <div class="dialog-header-item">
+              <el-input v-model="suggest" size="middle"></el-input>
+            </div>
+            <div class="dialog-footer">
+              <el-button size="mini" @click="handleClose">取消</el-button>
+              <el-button type="primary" size="mini" @click="verify" :disabled="verifyDisabled">确认</el-button>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+    </div>
+  </div>
+
+  <script>
+    let vm = new Vue({
+      el: "#app",
+      data: {
+        phone: null,
+        code: null,
+        smsCode: null,
+        count: '获取验证码',
+        disabled: false,
+        // dialogVisible: false,
+        // reasonDialogVisible: false,
+        confirmDialogVisible: false,
+        verifyDialogVisible:false,
+        jsonData: [],
+        data: {},
+        signUrl:'',
+        btnShow: true,
+        tableData: null,
+        signIds:[],
+        signs:[],
+        signParams:[],
+        signArrys:[],
+        signOrder: {},
+        signRole:'',
+        signDate:"",
+        roleIds:[],
+        leaderRoles:["2288a5fec6a63c36a05bf98b5d263a83","6ca12ca70052310cc6c2fc904b3069db","5449e74e247389785406328a144fc5e3"],
+        reason:'',
+        tableHtml:'',
+        taskKey:'',
+        reviewKey:'',
+        reviewIndex:1,
+        suggest:'同意',
+        record:'已同意',
+        verifyDisabled:false,
+        confirmDisabled:false,
+      },
+      async created() {
+        await this.init();
+      },
+      methods: {
+
+        handleClose() {
+          // this.dialogVisible = false;
+          this.confirmDialogVisible = false;
+          // this.reasonDialogVisible = false;
+          this.verifyDialogVisible = false;
+        },
+        getCode() {
+          if(!this.phone) {
+            this.$message({
+              message: '手机号不能为空',
+              type: 'error',
+              duration: 800
+            });
+            return false;
+          }
+          if(!(/^1[3456789]\d{9}$/.test(this.phone))){
+            this.$message({
+              message: '手机号输入不符合规范',
+              type: 'error',
+              duration: 800
+            });
+            return false;
+          }
+
+          const TIME_COUNT = 60;
+          if (!this.timer) {
+            this.count = TIME_COUNT;
+            this.disabled = true;
+            this.timer = setInterval(() => {
+              if (this.count > 0 && this.count <= TIME_COUNT) {
+                this.count--;
+              } else {
+                this.disabled = false;
+                this.count = '获取验证码'
+                clearInterval(this.timer);
+                this.timer = null;
+              }
+            }, 1000)
+          }
+          this.sendCode();
+        },
+        async init() {
+          const ret = await axios.get(`/oa-wkflow/form/json/get_json_formkey?form_key=${this.$urlParams('form_id')}`);
+          const res = ret.data;
+          if (res.code === 200) {
+            await this.loadTaskInfo();
+            await this.loadTable(res.result.form.json)
+          }
+        },
+        async loadTable(jsonStr) {
+          const ret = await axios.get(`/oa-wkflow/form/vals/get_forms?task_id=${this.$urlParams('task_id')}`);
+          const res = ret.data;
+          if (res.code === 200) {
+            const jsonData = JSON.parse(jsonStr);
+            this.tableData = JSON.parse(res.result[res.result.length - 1].FORM_VALS_JSON);
+            const user_id = this.$urlParams('user_id');
+            let reviewinfo = this.tableData["reviewinfo"];
+            if(reviewinfo){
+              this.reviewKey = reviewinfo.key;
+              this.reviewIndex = reviewinfo.index;
+            }
+            if(this.reviewKey && (this.taskKey != this.reviewKey)){
+              this.reviewIndex++;
+            }
+            console.log("reviewIndex-->:"+this.reviewIndex);
+            if(user_id){
+              await this.getCurrentUserById(user_id,jsonData);
+            }else{
+              await this.getCurrentUser(jsonData);
+            }
+          }
+        },
+        async flushTable() {
+          const ret = await axios.get(`/oa-wkflow/form/vals/get_forms?task_id=${this.$urlParams('task_id')}`);
+          const res = ret.data;
+          if (res.code === 200) {
+            this.tableData = JSON.parse(res.result[res.result.length - 1].FORM_VALS_JSON);
+            let reviewinfo = this.tableData["reviewinfo"];
+            if(reviewinfo){
+              this.reviewKey = reviewinfo.key;
+              this.reviewIndex = reviewinfo.index;
+            }
+            if(this.reviewKey && (this.taskKey != this.reviewKey)){
+              this.reviewIndex++;
+            }
+          }
+        },
+        async loadTaskInfo() {
+          const ret = await axios.get(`/oa-wkflow/api/task/get?task_id=${this.$urlParams('task_id')}`);
+          const res = ret.data;
+          if (res.code === 200) {
+            this.taskKey = res.result.taskDefinitionKey;
+          }
+        },
+        verifyNumber(s) {
+          return Object.prototype.toString.call(s).slice(8, -1) === 'Number'
+        },
+
+
+        async getCurrentUserById(userId,jsonData) {
+          const ret = await axios.get('/oa-wkflow/api/review/get_user?userId='+userId);
+          const res = ret.data;
+          if (res.code === 200) {
+            const result = res.result;
+            this.phone = result.MOBILE;
+            this.signUrl = result.SIGN_URL;
+            this.signs = result.sign;
+            this.roleIds = result.roleIds;
+            this.recursiveRender(jsonData);
+            this.jsonData = jsonData;
+            // for(let key in this.signOrder){
+            //   let signObj = this.signOrder[key];
+            //   this.signParams.push(signObj.parmas);
+            //   this.signIds.push(signObj.id);
+            // }
+          }
+        },
+
+        async getCurrentUser(jsonData) {
+          const ret = await axios.get('/oa-auth/cp/usr/au-usr/current');
+          const res = ret.data;
+          if (res.code === 200) {
+            const result = res.result;
+            this.phone = result.mobile;
+            this.signUrl = result.signUrl;
+            this.signs = result.sign;
+            this.roleIds = result.roleIds;
+            this.recursiveRender(jsonData)
+            this.jsonData = jsonData;
+
+          }
+        },
+
+        recursiveRender(jsonArr) {
+          for(let i of jsonArr) {
+            const slotType = i.slotType;
+            const dataType = i.dataType;
+            //处理单元格类型数据
+            if(dataType === "text"){
+              if(slotType === "slot"){
+                if(this.tableData[i.params]){
+                  i.title = this.tableData[i.params];
+                  if(i.unit){
+                    i.title = i.title + "    " + i.unit;
+                  }
+                }else{
+                  if(i.params && !i.title){
+                    i.title = "-";
+                  }
+                }
+                if(this.tableData[i.subTitle]){
+                  i.subTitle = this.tableData[i.subTitle];
+                }else{
+                  i.subTitle = '';
+                }
+
+              }
+              if(slotType === "img"){
+                let key = i.params + i.order;
+                if(this.tableData[key] && typeof this.tableData[key] == "object" ){
+                  i.src = this.tableData[key].src;
+                  i.subTitle = this.tableData[key].date;
+                }
+                // let imgArr = [];
+                // if(key){
+                //   imgArr = key.split("|");
+                // }
+                // if(imgArr && imgArr.length>0){
+                //   for(let img of imgArr){
+                //     if(i.order && i.order!=0){
+                //       img = img + '' + i.order;
+                //     }
+                //
+                //     if(this.tableData[img] && typeof this.tableData[img] == "object" ){
+                //       i.src = this.tableData[img].src;
+                //       i.subTitle = this.tableData[img].date;
+                //     }
+                //   }
+                // }else{
+                //   if(i.order && i.order!=0){
+                //     key = key + '' + i.order;
+                //   }
+                //   if(this.tableData[key] && typeof this.tableData[key] == "object" ){
+                //     i.src = this.tableData[key].src;
+                //     i.subTitle = this.tableData[key].date;
+                //   }
+                // }
+              }
+              if(slotType === "a"){
+                if(this.tableData[i.params] && typeof this.tableData[i.params] == "object"){
+                  i.url = this.tableData[i.params].url?this.tableData[i.params].url:this.tableData[i.params].value;
+                  i.aText = this.tableData[i.params].text?this.tableData[i.params].text:this.tableData[i.params].label;
+                  if(i.aType!=="url"){
+                    i.aParam = this.tableData[i.params].param;
+                  }
+                }
+              }
+            }else{
+              //处理数组类型数据
+              let dataArray = this.tableData[i.params];
+              if(dataType === "rowArray" ||  dataType === "colArray"){
+                const dataParams = i.dataParams;
+                const aType = i.aType;
+                // if(slotType === "img"){
+                //   if(i.order && i.order!=0){
+                //     dataArray = this.tableData[i.params+i.order];
+                //   }
+                // }
+                if(slotType === "a" && !dataParams){
+                  dataArray = [];
+                  const params = i.params;
+                  const $params = "$"+i.params;
+                  console.log($params);
+                  let paramsArray = this.tableData[params];
+                  let $paramsStr = this.tableData[$params];
+                  console.log($paramsStr);
+                  if($paramsStr){
+                    let $paramsArray = $paramsStr.split(" | ");
+                    for(let i=0;i<paramsArray.length;i++){
+                      let aParams = {};
+                      aParams.url = paramsArray[i];
+                      aParams.aText = $paramsArray[i];
+                      if(aType !== "url"){
+                        aParams.aParam = {"objectId":paramsArray[i]} ;
+                      }
+                      dataArray.push(aParams);
+                    }
+                  }else {
+                    for(let i=0;i<paramsArray.length;i++){
+                      let aParams = {};
+                      aParams.url = paramsArray[i].value;
+                      aParams.aText = paramsArray[i].label;
+                      dataArray.push(aParams);
+                    }
+                  }
+                }
+                if(dataArray && dataParams){
+                  let newArr = [];
+                  for(let item of dataArray){
+                    if(slotType === "a"){
+                      const params = dataParams;
+                      const $params = "$"+dataParams;
+                      let paramsArray = item[params];
+                      let $paramsStr = item[$params];
+                      let $paramsArray = $paramsStr.split(" | ");
+                      for(let i=0;i<paramsArray.length;i++){
+                        let aParams = {};
+                        aParams.url = paramsArray[i];
+                        aParams.aText = $paramsArray[i];
+                        if(aType !== "url"){
+                          aParams.aParam = {"OBJECT_ID":paramsArray[i]} ;
+                        }
+                        newArr.push(aParams);
+                      }
+                    }else if(slotType === "slot"){
+                      const value = item[dataParams];
+                      if(value){
+                        newArr.push(value);
+                      }
+                    }else if(slotType === "img"){
+                      const value = item[dataParams];
+                      if(value){
+                        newArr.push(value);
+                      }
+                    }
+                  }
+                  if(newArr.length>0){
+                    i.data = newArr;
+                  }else{
+                    console.error("未找到json字段对应的参数")
+                    i.data = dataArray;
+                  }
+                  console.log("i.data-->:%o",i.data);
+                }else{
+                  console.log("newArrElse-->:",dataArray);
+                  i.data = dataArray;
+                }
+              }else{
+                i.data = dataArray;
+              }
+            }
+
+            //处理签名逻辑
+            // 特殊处理  因公外出表格总经理作为第一个顺序签字的逻辑
+            // let form_id = this.$urlParams('form_id');
+            // console.log("form_id-->:"+form_id);
+            // console.log("taskKey-->:"+this.taskKey);
+            // if(form_id == "7d286b02c02045c45d08c8bb43b45971" && (this.taskKey == "managerreview" || this.taskKey == "chairmanreview")){//因公外出审批
+              // if( this.taskKey == "managerreview" && i.params == "manager" && this.signs.indexOf("manager") > -1){//判断有没有总经理签字标签
+              //   let signObj = {};
+              //   signObj.id = i.id;
+              //   signObj.dataType = i.dataType;
+              //   signObj.signName = i.params + i.order;
+              //   signObj.role = "manager";
+              //   this.signOrder["manager"] = signObj;
+              // }
+              //
+              // if( this.taskKey == "chairmanreview" && i.params == "chairman" && this.signs.indexOf("chairman") > -1){//判断有没有董事长签字标签
+              //   let signObj = {};
+              //   signObj.id = i.id;
+              //   signObj.dataType = i.dataType;
+              //   signObj.signName = i.params + i.order;
+              //   signObj.role = "chairman";
+              //   this.signOrder["chairman"] = signObj;
+              // }
+
+            // }else{
+              //判断当前单元格是否是当前任务的审批顺序，是可以签字，不是则过滤掉
+            //   console.log("i.order-->:"+i.order);
+            //   if(slotType === "img" && i.order && i.order == this.reviewIndex){
+            //     //判断是否一格多角色签字，是的话则进行分割判断
+            //     let imgObj = i.params;
+            //     console.log("imgObj-->:"+imgObj);
+            //     let imgArr = [];
+            //     if(imgObj){
+            //       imgArr = imgObj.split("|");
+            //     }
+            //     console.log("imgArr-->:"+imgArr);
+            //     let filterArr = [];
+            //     if(imgArr && imgArr.length>0){
+            //       filterArr = this.signs.filter(function(val){
+            //         return imgArr.indexOf(val)>-1;
+            //       });
+            //     }
+            //     console.log("filterArr-->:"+filterArr);
+            //     if(this.signs.indexOf(i.params) > -1 || (filterArr && filterArr.length>0)){
+            //       let paramsKey = i.params;
+            //       if (filterArr.length>0) {
+            //         paramsKey = filterArr[0];
+            //       }
+            //       let signObj = {};
+            //       // signObj.order = i.order;
+            //       signObj.id = i.id;
+            //       signObj.dataType = i.dataType;
+            //       // signObj.params = i.params;
+            //       signObj.role = paramsKey;
+            //       signObj.signName = i.params + i.order;
+            //       this.signOrder[paramsKey] = signObj;
+            //     }else{
+            //       console.log("该用户未配置相对应的签字标签，请检查用户签字标签-->%o，当前节点对应的标签为-->%s",this.signs,i.params);
+            //     }
+            //   // }
+            // }
+
+
+
+
+            // if (slotType === "img") {
+
+              //特殊签字处理
+              // let form_id = this.$urlParams('form_id');
+              // console.log("form_id-->:"+form_id);
+              // console.log("taskKey-->:"+this.taskKey);
+              // // 特殊处理  因公外出表格对应的 formid
+              // if(form_id == "7d286b02c02045c45d08c8bb43b45971" && this.taskKey == "managerreview"){//因公外出审批
+              //   console.log("manager-->:"+imgObj);
+              //   if(imgObj == "manager"){
+              //     this.signIds.push(i.id);
+              //     this.signParams.push(imgObj);
+              //   }
+              //   continue;
+              // }
+
+              // if(this.signs.indexOf(i.params) > -1 || (filterArr && filterArr.length>0)){
+              //   let paramsKey = i.params;
+              //   if (filterArr.length>0) {
+              //     paramsKey = filterArr[0];
+              //   }
+              //   console.log("paramsKey-->:"+paramsKey);
+              //   //签字顺序等于审批顺序，可以签字（i.order>0）
+              //   console.log("i.order-->:"+i.order);
+              //   console.log("i.reviewIndex-->:"+this.reviewIndex);
+              //   if(i.order && i.order == this.reviewIndex){
+              //     let signObj = {};
+              //     signObj.order = i.order;
+              //     signObj.id = i.id;
+              //     signObj.dataType = i.dataType;
+              //     signObj.params = i.params;
+              //     signObj.role = paramsKey;
+              //     this.signOrder[paramsKey] = signObj;
+              //
+              //     // // 1、数组类型数据处理
+              //     // if(dataType === "rowArray" ||  dataType === "colArray"){
+              //     //   if(!this.hasSignUser(this.tableData[i.params],paramsKey+i.order)){
+              //     //     let signObj = this.signOrder[paramsKey];
+              //     //     if(!signObj){
+              //     //       signObj = {};
+              //     //       signObj.order = i.order;
+              //     //       signObj.id = i.id;
+              //     //       signObj.dataType = i.dataType;
+              //     //       signObj.params = i.params;
+              //     //       signObj.role = paramsKey;
+              //     //       this.signOrder[paramsKey] = signObj;
+              //     //     }
+              //     //   }
+              //     // }
+              //     // //2、非数组类型数据处理
+              //     // if(dataType === "text"){
+              //     //   if(!this.tableData[paramsKey+i.order]){//查询签字数据
+              //     //     let signObj = {};
+              //     //     signObj.order = i.order;
+              //     //     signObj.id = i.id;
+              //     //     signObj.dataType = i.dataType;
+              //     //     signObj.params = paramsKey + i.order;
+              //     //     signObj.role = paramsKey;
+              //     //     this.signOrder[paramsKey] = signObj;
+              //     //     // let signObj = this.signOrder[paramsKey];
+              //     //     // if(!signObj){
+              //     //     // }
+              //     //     // let order = signObj.order;
+              //     //
+              //     //     // if(i.order<order){
+              //     //     //   signObj.order = i.order;
+              //     //     //   signObj.id = i.id;
+              //     //     //   signObj.dataType = i.dataType;
+              //     //     //   signObj.params = paramsKey + '' + i.order;
+              //     //     // }
+              //     //   }
+              //     // }
+              //     // if (paramsKey == i.params) {
+              //     // }else{
+              //     //   // if(!this.hasSignUser(this.tableData[i.params],paramsKey+i.order)){
+              //     //   //   if(dataType === "text"){
+              //     //   //     let signObj = this.signOrder[paramsKey];
+              //     //   //     if(!signObj){
+              //     //   //       signObj = {};
+              //     //   //       signObj.order = i.order;
+              //     //   //       signObj.id = i.id;
+              //     //   //       signObj.dataType = i.dataType;
+              //     //   //       signObj.params = paramsKey + '' + i.order;
+              //     //   //       signObj.role = paramsKey + i.order;
+              //     //   //       this.signOrder[paramsKey] = signObj;
+              //     //   //     }
+              //     //   //
+              //     //   //     let order = signObj.order;
+              //     //   //     if(i.order < order){
+              //     //   //       signObj.order = i.order;
+              //     //   //       signObj.id = i.id;
+              //     //   //       signObj.dataType = i.dataType;
+              //     //   //       signObj.params = paramsKey + '' + i.order;
+              //     //   //       signObj.role = paramsKey + i.order;
+              //     //   //     }
+              //     //   //   }
+              //     //   // }else{
+              //     //   //   if(dataType === "rowArray" ||  dataType === "colArray"){
+              //     //   //     let signObj = this.signOrder[paramsKey];
+              //     //   //     if(!signObj){
+              //     //   //       signObj = {};
+              //     //   //       signObj.order = i.order;
+              //     //   //       signObj.id = i.id;
+              //     //   //       signObj.dataType = i.dataType;
+              //     //   //       signObj.params = i.params;
+              //     //   //       signObj.role = paramsKey + i.order;
+              //     //   //       this.signOrder[paramsKey] = signObj;
+              //     //   //     }
+              //     //   //   }
+              //     //   // }
+              //     // }
+              //   } else{
+              //   //   if(dataType === "rowArray" ||  dataType === "colArray"){
+              //   //     this.signArrys.push(i.params);
+              //   //     this.signIds.push(i.id);
+              //   //   }else{
+              //   //     this.signIds.push(i.id);
+              //   //     this.signParams.push(paramsKey);
+              //   //     if(this.tableData[paramsKey]  && typeof this.tableData[paramsKey] == "object"){
+              //   //       i.src = "";
+              //   //       i.subTitle = "";
+              //   //       this.tableData[paramsKey].src= "";
+              //   //     }
+              //   //   }
+              //     console.log("没有配置签字顺序，请检查~~")
+              //   }
+              // }
+
+            // }
+            if(this.isArray(i.children)) {
+              this.recursiveRender(i.children)
+            }
+          }
+        },
+        async recursiveWriteRender(jsonArray) {
+
+          for (let i=0;i<jsonArray.length; i++) {
+            let item = jsonArray[i];
+            if(item.params == "records"){
+              dataParams = item.dataParams;
+              if(dataParams){
+                let data = item.data;
+                if(!data || !this.isArray(data) ){
+                  data = [];
+                }
+                if(dataParams == "role"){
+                  data.push(this.taskKey?this.taskKey:"-");
+                }
+                if(dataParams == "approve"){
+                  let obj = {"src":this.signUrl};
+                  data.push(obj);
+                }
+
+                if(dataParams == "suggest"){
+                  data.push(this.suggest?this.suggest:"-");
+                }
+
+                if(dataParams == "record"){
+                  data.push(this.record + " "+this.signDate?this.signDate:" ");
+                }
+                Vue.set(item, 'data', data);
+              }
+            }
+            if(this.isArray(item.children)) {
+              this.recursiveWriteRender(item.children)
+            }
+          }
+        },
+        isArray(a) {
+          return Object.prototype.toString.call(a).slice(8, -1) === "Array";
+        },
+        hasSignUser(signArray,signRole){
+          let flag = false;
+          if(!signArray || signArray.length == 0 || !signRole){
+            return flag;
+          }
+          for(let signObj of signArray){
+            if(typeof signObj == "object"){
+              const role = signObj["role"];
+              if(signRole == role){
+                flag = true;
+                break;
+              }
+            }
+          }
+          return flag;
+        },
+        // getNowFormatDate() {
+        //   var date = new Date();
+        //   var year = date.getFullYear();
+        //   var month = date.getMonth() + 1;
+        //   var strDate = date.getDate();
+        //   if (month >= 1 && month <= 9) {
+        //     month = "0" + month;
+        //   }
+        //   if (strDate >= 0 && strDate <= 9) {
+        //     strDate = "0" + strDate;
+        //   }
+        //   return `${year}年${month}月${strDate}日`;
+        // },
+        async verify() {
+          this.record = '已同意'
+          this.verifyDisabled = true;
+
+          setTimeout(() => {
+            this.verifyDisabled = false;
+          },4000)
+
+          const ret = await axios.get(`/oa-wkflow/api/review/get_date`);
+          const res = ret.data;
+          if (res.code === 200) {
+            const result = res.result;
+            this.signDate = result.date;
+            console.log("signOrder-->%o;",this.signOrder);
+            await this.flushTable();
+            let signs = this.tableData["records"];
+            if(!signs){
+              signs = [];
+            }
+            let record = {"role":this.taskKey?this.taskKey:"-","approve":{"src":this.signUrl},"suggest":this.suggest?this.suggest:"-","record":"已同意 "+this.signDate?this.signDate:" "};
+            signs.push(record);
+            this.tableData["records"]=signs;
+            if(!this.reviewKey){
+              this.tableData["reviewinfo"]={"key":this.taskKey,"index":1};
+            }else{
+              if(this.taskKey != this.reviewKey){
+                this.tableData["reviewinfo"]={"key":this.taskKey,"index":this.reviewIndex};
+              }
+            }
+            this.submit(0);
+          }
+
+
+
+          // Vue.set(item, 'data', data);
+          // for(let i=0;i<this.signArrys.length;i++){
+          //   const signName = this.signArrys[i];
+          //   console.log("signName-->"+signName);
+          //   let data = this.tableData[signName];
+          //   if(!data || !this.isArray(data)){
+          //     data = [];
+          //   }
+          //
+          //   let imgObj = {'src':this.signUrl,"date":this.signDate,"order":this.reviewIndex};
+          //   if(this.signRole){
+          //     imgObj = {'role':this.signRole,'src':this.signUrl,"date":this.signDate,"order":this.reviewIndex};
+          //   }
+          //   data.push(imgObj);
+          //   console.log("data-->%o",data);
+          //   this.tableData[signName] = data;
+          // }
+          //
+          // for(let i=0;i<this.signParams.length;i++){
+          //   const signName = this.signParams[i];
+          //   this.tableData[signName] = {"src":this.signUrl,"date":this.signDate,"order":this.reviewIndex}
+          //
+          //   // let imgObj = {'src':this.signUrl};
+          //   // let data = this.tableData[signName];
+          //   // if(!data || !this.isArray(data) ){
+          //   //   data = [];
+          //   // }
+          //   // data.push(imgObj);
+          //
+          // }
+
+
+        },
+        sendCode() {
+          axios.get(`/oa-wkflow/api/review/get_code?mobile=${this.phone}`).then(ret => {
+            const res = ret.data;
+            if (res.code === 200) {
+              const result = res.result;
+              this.smsCode = result.code;
+              this.signDate = result.date;
+            }
+          })
+        },
+        onSubmit() {
+          //判断是否具有签字标签，没有直接提示
+          if(!this.signs || this.signs.length == 0){
+            this.$message({
+              message: '该用户未配置签字权限，请联系信息组人员进行配置',
+              type: 'error',
+              duration: 800
+            });
+          }
+          this.verifyDialogVisible = true;
+          // this.$confirm("是否继续该操作?", "提示", {
+          //   confirmButtonText: "确定",
+          //   cancelButtonText: "取消",
+          //   type: "warning"
+          // }).then(() => {
+          //   this.verify();
+          // }).catch(() => {
+          //     this.$message({
+          //       type: "info",
+          //       message: "已取消"
+          //     });
+          // });
+
+        },
+        onDisagree(){
+          this.confirmDialogVisible = true;
+          // this.confirmDialogVisible = true;
+          // if( this.roleIds && this.roleIds.length>0 ){
+          //   let flag = false;
+          //   for(let i=0;i<this.roleIds.length;i++){
+          //     if(this.leaderRoles.indexOf(this.roleIds[i]) > -1){
+          //       flag = true;
+          //       break;
+          //     }
+          //   }
+          //   if(!flag){
+          //     this.reasonDialogVisible = true;
+          //   }else{
+          //   }
+
+          // }else{
+          //   this.$message({
+          //     message: '该用户未配置角色信息，请联系信息组人员进行配置',
+          //     type: 'error',
+          //     duration: 800
+          //   });
+          // }
+
+          this.confirmDialogVisible = true;
+        },
+       async confirm(){
+          this.record = '不同意'
+          this.confirmDisabled = true;
+          setTimeout(() => {
+            this.confirmDisabled = false;
+          },4000)
+         const ret = await axios.get(`/oa-wkflow/api/review/get_date`);
+         const res = ret.data;
+         if (res.code === 200) {
+           const result = res.result;
+           this.signDate = result.date;
+           console.log("signOrder-->%o;",this.signOrder);
+           await this.flushTable();
+           let signs = this.tableData["records"];
+           if(!signs){
+             signs = [];
+           }
+           let record = {"role":this.taskKey?this.taskKey:"-","approve":{"src":this.signUrl},"suggest":this.suggest?this.suggest:"-","record":"已同意 "+this.signDate?this.signDate:" "};
+           signs.push(record);
+           this.tableData["records"]=signs;
+           if(!this.reviewKey){
+             this.tableData["reviewinfo"]={"key":this.taskKey,"index":1};
+           }else{
+             if(this.taskKey != this.reviewKey){
+               this.tableData["reviewinfo"]={"key":this.taskKey,"index":this.reviewIndex};
+             }
+           }
+           this.submit(1);
+         }
+        },
+         submit(reviewresult){
+          this.tableData["reviewresult"] = reviewresult;
+          this.tableData["reviewreason"] = this.suggest;
+          if(reviewresult == 0){
+            this.recursiveWriteRender(this.jsonData);
+            //异步处理
+            this.$nextTick(function () {
+
+              const html = this.$refs.table.outerHTML;
+              this.requestSubmit(html);
+            })
+          }else{
+            this.requestSubmit(null);
+          }
+
+          // console.log("this.tableHtml2-->:"+this.tableHtml);
+          // this.tableData["html"] = this.tableHtml;
+          // console.log("this.tableData-->:%o"+this.tableData);
+          // console.log("html-->:"+this.tableData["html"]);
+
+
+          // axios.get('/oa-wkflow/form/workflow/reject',{params:{
+          //   task_id: this.$urlParams('task_id'),
+          //   reason: this.reason,
+          //   current_usr_id:this.$urlParams('user_id')
+          // }}).then(ret => {
+          //   this.confirmDialogVisible = false;
+          //   this.reasonDialogVisible = false;
+          //   const res = ret.data;
+          //   if (res.code === 200) {
+          //     this.btnShow = false;
+          //     this.$message.success("提交成功");
+          //     const user_id = this.$urlParams('user_id');
+          //     if(user_id){
+          //
+          //     }else{
+          //       setTimeout(function(){
+          //         window.parent.closeTaskTag();
+          //       },3000);
+          //     }
+          //   }
+          // })
+        },
+        requestSubmit(html){
+          axios.post('/oa-wkflow/form/workflow/submit',{
+            task_id: this.$urlParams('task_id'),
+            form_id: this.$urlParams('form_id'),
+            form: JSON.stringify(this.tableData),
+            current_usr_id:this.$urlParams('user_id'),
+            html: html
+          }).then(ret => {
+            const res = ret.data;
+            if (res.code === 200) {
+              this.btnShow = false;
+              this.confirmDialogVisible = false;
+              // this.reasonDialogVisible = false;
+              // this.dialogVisible = false;
+              this.verifyDialogVisible = false;
+              this.$message.success("提交成功");
+
+              // html 转pdf
+              // createPdf();
+              const user_id = this.$urlParams('user_id');
+              if(user_id){
+
+              }else{
+                setTimeout(function(){
+                  window.parent.closeTaskTag();
+                },3000);
+              }
+            }else{
+              this.$message.error(res.message);
+            }
+          })
+        }
+      },
+
+
+    })
+  </script>
+</body>
+
+</html>

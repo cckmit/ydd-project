@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>表单提交</title>
+    <!-- css -->
+    <link rel="stylesheet" href="/oa-wkflow/formjs/cdn/element-ui/theme-chalk/index.css">
+    <!-- babel -->
+    <script src="/oa-wkflow/resource/babel/babel-browser.min.js"></script>
+    <!-- vue -->
+    <script src="/oa-wkflow/formjs/cdn/vue/vue.min.js"></script>
+    <!-- element-ui js -->
+    <script src="/oa-wkflow/formjs/cdn/element-ui/index.js"></script>
+    <!-- axios -->
+    <script src="/oa-wkflow/formjs/cdn/axios/axios.min.js"></script>
+    <!-- avue -->
+    <script src="/oa-wkflow/formjs/cdn/avue/avue.min.js"></script>
+    <style>
+	.el-select{
+		width: 100%;
+	}
+	</style>
+	<!-- jquery -->
+    <script src="/oa-wkflow/web/resource/js/jquery.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript">
+  	//获取地址栏参数值
+    function getUrlParam(name) {
+    	var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); // 构造一个含有目标参数的正则表达式对象
+    	var r = window.location.search.substr(1).match(reg); // 匹配目标参数
+    	if (r != null){
+    		return decodeURIComponent(r[2]);
+    	}
+    	return null; //返回参数值
+    }
+  	var formData = {};
+    function loadFormData(){
+  		var url = '/oa-wkflow/form/json/get_json?task_id='+getUrlParam('task_id');
+  		$.ajax({
+  			    url:url,
+  			    dataType:"json",
+  			    async:false,
+  			    type:"get",
+  			    success:function(data){
+  					if(data.code==200){
+  						formData = data.result;
+  					}
+  			    }
+  			});
+  		
+  		var form_json_str = formData.form;
+		var form_values = formData.values;
+		console.log(form_values);
+
+		if(!form_json_str){
+			form_json_str = {};
+		}
+		if(!form_values){
+			form_values = {};
+		}
+		// console.log(form_json_str);
+		var form_json = JSON.parse(form_json_str.json);
+		//console.log(form_json);
+		//修复一下 string -> 应该为json 的数据
+		var cloumns = form_json.column;
+		var columnsMap = {};
+		if(cloumns && cloumns.length > 0){
+			for(var i=0;i<cloumns.length;i++){
+				var column = cloumns[i];
+				columnsMap[column.prop] = column;
+				console.log("------类型------"+column.type);
+				if("daterange"==column.type && column.prop){
+					console.log("-----------daterange------>" + form_values[column.prop]);
+					if(form_values[column.prop]){
+						form_values[column.prop] = JSON.parse(form_values[column.prop]);
+					}
+				}
+				if("timerange"==column.type && column.prop){
+					console.log("-----------timerange------>" + form_values[column.prop]);
+					if(form_values[column.prop]){
+						form_values[column.prop] = JSON.parse(form_values[column.prop]);
+					}
+				}
+				if("datetimerange"==column.type && column.prop){
+					console.log("-----------datetimerange------>" + form_values[column.prop]);
+					if(form_values[column.prop]){
+						form_values[column.prop] = JSON.parse(form_values[column.prop]);
+					}
+				}
+				if("select"==column.type && column.prop){
+					console.log("-----------选择------>" + form_values[column.prop]);
+					if("remote" == column.dicOption){
+						delete column.dicData;
+					}
+				}
+				if("tree"==column.type && column.prop){
+					console.log("----------tree------>" + form_values[column.prop]);
+					if("remote" == column.dicOption){
+						delete column.dicData;
+					}
+				}
+			}
+		}
+
+		formData.form = form_json;
+		formData.columnsMap = columnsMap;
+		formData.values = form_values;
+  		return formData;
+  	}
+    </script>
+
+</head>
+
+<body>
+    <div id="app" >
+        <avue-form v-show="showApp" :option="option" v-model="form" @submit="handleSubmit"></avue-form>
+    </div>
+
+<script type="text/babel">
+	var formData = loadFormData();
+
+	var urlSubmit = '/oa-wkflow/form/workflow/submit';
+
+var formVue = new Vue({
+        el: "#app",
+        data() {
+            return {
+                form: formData.values,
+                option: formData.form,
+				showApp : true
+            }
+        },
+        created() {
+		},
+        methods: {
+			updateFormValue(){
+				console.log("强制更新");
+				// this.form = formData.values;
+				console.log(this.option);
+				for(var field in this.form){
+					if(!formData.columnsMap[field])continue;
+					var dicData = formData.columnsMap[field].dicData;
+					if(!dicData)continue;
+					if(dicData.length == 0){
+						continue;
+					}
+
+					var dataVavl = dicData[0].value;
+					console.log(field,this.form[field],typeof dataVavl,typeof this.form[field]);
+					var val = this.form[field];
+
+					var typeofField = typeof dataVavl;
+
+					if(typeofField == 'string'){
+						console.log(11,val);
+						this.form[field] = val +"" ;
+					}else if(typeofField == 'number'){
+						console.log(22,val);
+						if(checkNum(val)){
+							var i = parseInt(val);
+							this.form[field] = i ;
+						}
+					}
+						
+					
+				} //# for
+			},
+            handleSubmit(form, done) {
+				var thiz = this;
+				console.log(form);
+				axios({
+					method: 'post',
+					url: urlSubmit,
+					data: {
+						task_id: getUrlParam('task_id'),
+						form: JSON.stringify(form)
+					}
+				})
+				.then(function (response) {
+					console.log(response);
+					if(response.data.code==200){
+						thiz.$message.success(response.data.result);
+						thiz.showApp = false;
+						// window.close();
+	                    // done()
+
+					}else{
+						thiz.$message.error(response.message);
+					}
+				})
+				.catch(function (error) {
+					console.log(error);
+				});
+            } // handleSubmit
+        }
+    });
+
+setTimeout(function(){
+	formVue.updateFormValue();
+},1000);
+
+function checkNum(num){
+    var reg=/^[0-9]+.?[0-9]*$/; //判断字符串是否为数字 ，判断正整数用/^[1-9]+[0-9]*]*$/
+    if(!reg.test(num)){
+        return false;
+    }else{
+        return true;
+    }
+
+}
+</script>
+</body>
+</html>

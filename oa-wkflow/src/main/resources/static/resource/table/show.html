@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+  <title>表格展示</title>
+
+  <script src="../../tablejs/vue/vue.min.js"></script>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="../../tablejs/element-ui/theme-chalk/index.css">
+
+
+
+  <!-- 引入组件库 -->
+  <script src="../../tablejs/element-ui/index.js"></script>
+  <script src="../../tablejs/axios/axios.min.js"></script>
+<!--  <script src="../../tablejs/designTable/table_bak.js"></script>-->
+  <script src="../../tablejs/designTable/build.js"></script>
+
+  <script src="/oa-wkflow/resource/js/jquery.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/oa-wkflow/resource/js/jspdf.debug.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/oa-wkflow/resource/js/html2canvas.js" type="text/javascript" charset="utf-8"></script>
+  <!--  <script src="/oa-wkflow/resource/js/jspdf.umd.js" type="text/javascript" charset="utf-8"></script>-->
+  <script src="dPdf.js"></script>
+  <script src="Print.js"></script>
+
+
+  <style>
+    html,
+    body {
+      /*height: 100%;*/
+
+
+    }
+
+    #app {
+      height: 97%;
+      width:95%;
+      text-align:center;
+      margin:auto;
+    }
+
+    .table {
+      width:92%;
+      height: 92%;
+      margin: auto;
+    }
+    .table::-webkit-scrollbar{
+      display: none;
+    }
+
+    .footer {
+      margin: 30px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+
+
+
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="table" id="pdfDom">
+<!--      <generator-table :tree_data="jsonData[0]" :deep="0" />-->
+      <generator :json-data="jsonData" />
+    </div>
+    <div class="footer">
+      <el-button type="primary" @click="print()">打印</el-button>
+<!--      <el-button type="primary" @click="getPdf()">下载</el-button>-->
+    </div>
+  </div>
+
+</body>
+<script type="text/javascript">
+
+  let vm = new Vue({
+    el: "#app",
+    data: {
+      jsonData: [],
+      tableData: null,
+    },
+    mounted() {
+      this.init();
+    },
+    methods: {
+      init() {
+        axios.get(`/oa-wkflow/form/json/get_json_formkey?form_key=${this.$urlParams('form_id')}`).then(ret => {
+          const res = ret.data;
+            if (res.code === 200) {
+              this.loadTable(res.result.form.json)
+            }
+        })
+
+      },
+      loadTable(jsonStr) {
+        axios.get(`/oa-wkflow/form/vals/getData?pid=${this.$urlParams('pid')}&form_key=${this.$urlParams('form_id')}`).then(ret => {
+          const res = ret.data;
+          if (res.code === 200) {
+            let jsonData = JSON.parse(jsonStr);
+            this.tableData = JSON.parse(res.result);
+            this.recursiveRender(jsonData);
+            this.jsonData = jsonData;
+            console.log(this.jsonData);
+          }
+        });
+
+      },
+
+      recursiveRender(jsonArr) {
+        for(let i of jsonArr) {
+          const slotType = i.slotType;
+          const dataType = i.dataType;
+          //处理单元格类型数据
+          if (dataType === "text") {
+            if (slotType === "slot") {
+              if (this.tableData[i.params]) {
+                i.title = this.tableData[i.params];
+                if (i.unit) {
+                  i.title = i.title + "    " + i.unit;
+                }
+              } else {
+                if(i.params && !i.title){
+                  i.title = "-";
+                }
+              }
+              if (this.tableData[i.subTitle]) {
+                i.subTitle = this.tableData[i.subTitle];
+              }else{
+                i.subTitle = "";
+              }
+
+            }
+            if (slotType === "img") {
+              let key = i.params + i.order;
+              if(this.tableData[key] && typeof this.tableData[key] == "object" ){
+                i.src = this.tableData[key].src;
+                i.subTitle = this.tableData[key].date;
+              }
+              // let key = i.params;
+              // let imgArr = [];
+              // if (key) {
+              //   imgArr = key.split("|");
+              // }
+              // if (imgArr && imgArr.length > 0) {
+              //   for (let img of imgArr) {
+              //     if (i.order && i.order != 0) {
+              //       img = img + '' + i.order;
+              //     }
+              //
+              //     if (this.tableData[img] && typeof this.tableData[img] == "object") {
+              //       i.src = this.tableData[img].src;
+              //       i.subTitle = this.tableData[img].date;
+              //     }
+              //   }
+              // } else {
+              //   if (i.order && i.order != 0) {
+              //     key = key + '' + i.order;
+              //   }
+              //   if (this.tableData[key] && typeof this.tableData[key] == "object") {
+              //     i.src = this.tableData[key].src;
+              //     i.subTitle = this.tableData[key].date;
+              //   }
+              // }
+            }
+            if (slotType === "a") {
+              if (this.tableData[i.params] && typeof this.tableData[i.params] == "object") {
+                i.url = this.tableData[i.params].url;
+                i.aText = this.tableData[i.params].text;
+                if (i.aType !== "url") {
+                  i.aParam = this.tableData[i.params].param;
+                }
+              }
+            }
+          } else {
+            //处理数组类型数据
+            let dataArray = this.tableData[i.params];
+            if (dataType === "rowArray" || dataType === "colArray") {
+
+              if(slotType === "img"){
+                if(i.order && i.order!=0){
+                  dataArray = this.tableData[i.params+i.order];
+                }
+              }
+
+              const dataParams = i.dataParams;
+              const aType = i.aType;
+              if (slotType === "a" && !dataParams) {
+                dataArray = [];
+                const params = i.params;
+                const $params = "$" + i.params;
+                console.log($params);
+                let paramsArray = this.tableData[params];
+                let $paramsStr = this.tableData[$params];
+                console.log($paramsStr);
+                if ($paramsStr) {
+                  let $paramsArray = $paramsStr.split(" | ");
+                  for (let i = 0; i < paramsArray.length; i++) {
+                    let aParams = {};
+                    aParams.url = paramsArray[i];
+                    aParams.aText = $paramsArray[i];
+                    if (aType !== "url") {
+                      aParams.aParam = {"objectId": paramsArray[i]};
+                    }
+                    dataArray.push(aParams);
+                  }
+                }else {
+                  for(let i=0;i<paramsArray.length;i++){
+                    let aParams = {};
+                    aParams.url = paramsArray[i].value;
+                    aParams.aText = paramsArray[i].label;
+                    dataArray.push(aParams);
+                  }
+                }
+              }
+              console.log("dataParams-->:" + dataParams);
+              if (dataArray && dataParams) {
+                let newArr = [];
+                for (let item of dataArray) {
+                  if (slotType === "a") {
+                    const params = dataParams;
+                    const $params = "$" + dataParams;
+                    let paramsArray = item[params];
+                    let $paramsStr = item[$params];
+                    let $paramsArray = $paramsStr.split(" | ");
+                    for (let i = 0; i < paramsArray.length; i++) {
+                      let aParams = {};
+                      aParams.url = paramsArray[i];
+                      aParams.aText = $paramsArray[i];
+                      if (aType !== "url") {
+                        aParams.aParam = {"OBJECT_ID": paramsArray[i]};
+                      }
+                      newArr.push(aParams);
+                    }
+                  } else if (slotType === "slot") {
+                    const value = item[dataParams];
+                    if (value) {
+                      newArr.push(value);
+                    }
+                  } else if (slotType === "img") {
+                    const value = item[dataParams];
+                    if (value) {
+                      newArr.push(value);
+                    }
+                  }
+                }
+                if (newArr.length > 0) {
+                  i.data = newArr;
+                } else {
+                  console.error("未找到json字段对应的参数")
+                  i.data = dataArray;
+                }
+                console.log("i.data-->:%o", i.data);
+              } else {
+                console.log("newArrElse-->:%o", dataParams);
+                i.data = dataArray;
+              }
+            } else {
+              i.data = dataArray;
+            }
+          }
+          if (this.isArray(i.children)) {
+            this.recursiveRender(i.children)
+          }
+        }
+      },
+      isArray(a) {
+        return Object.prototype.toString.call(a).slice(8, -1) === "Array";
+      },
+      print(){
+        Print('#pdfDom', {
+          onStart: function () {
+            console.log('onStart', new Date())
+          },
+          onEnd: function () {
+            console.log('onEnd', new Date())
+          }
+        })
+      },
+      getPdf(){
+        downloadPdf(this.tableData.procName);
+      }
+
+    },
+
+  })
+</script>
+
+</html>

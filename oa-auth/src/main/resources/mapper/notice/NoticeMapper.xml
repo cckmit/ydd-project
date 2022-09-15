@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydw.oa.auth.business.notice.mapper.NoticeMapper">
+
+<select id="listPage" resultType="java.util.HashMap">
+		select t.* from t_notice t 
+		left join t_au_usr_dept t1 on FIND_IN_SET(t1.DEPT_ID,t.RECEIVE_DEPT_ID)>0 		
+		${ew.customSqlSegment}  
+	</select>
+	
+</mapper>

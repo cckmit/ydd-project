@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>表格设计</title>
+    <script src="./vue/vue.min.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="./element-ui/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="./element-ui/index.js"></script>
+    <script src="./axios/axios.min.js"></script>
+<!--    <script src="./designTable/table_bak.js"></script>-->
+    <script src="./designTable/build.js"></script>
+    <style>
+        html,body{
+            margin: 0;
+            height: 100%;
+        }
+        #app{
+            height: 100%;
+        }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <design :json-data="jsonData"/>
+    </div>
+  </body>
+  <script>
+      new Vue({
+          el: "#app",
+          data: {
+            jsonData: []
+          },
+          mounted() {
+            const kid = this.$urlParams('kid')
+            if(kid) {
+              axios.get(`/oa-wkflow/form/json/get_json_formkey?form_key=${kid}`).then(ret=> {
+                    const res = ret.data;
+                    if(res.code === 200) {
+                      this.jsonData = JSON.parse(res.result.form.json);
+                    }
+              })
+            }
+            
+          }
+      })
+  </script>
+</html>

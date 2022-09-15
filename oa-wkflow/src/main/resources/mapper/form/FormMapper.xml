@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydw.oa.wkflow.business_main.form.mapper.FormMapper">
+
+	<select id="selectListPage" resultType="com.ydw.oa.wkflow.business_main.form.entity.Form">
+		select t.OBJECT_ID,t.NAME,t.CODE,t.RUN_TYPE,t.FORM_TYPE,t.CREATE_TIME,model.NAME_ modelName 
+		from t_form t 
+		left join act_re_model model on model.ID_ = t.MODEL_ID
+		left join act_re_procdef proc on model.DEPLOYMENT_ID_=proc.DEPLOYMENT_ID_
+		${ew.customSqlSegment}  
+	</select>
+</mapper>

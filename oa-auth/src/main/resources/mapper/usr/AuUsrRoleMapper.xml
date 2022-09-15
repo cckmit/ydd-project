@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydw.oa.auth.business.usr.mapper.AuUsrRoleMapper">
+
+	<select id="selectRoleUserInfoList" resultType="java.lang.String">
+		select a.USR_ID from t_au_usr_role a
+		left join t_au_role g on a.ROLE_ID = g.OBJECT_ID
+		inner join t_au_usr u on a.USR_ID = u.OBJECT_ID and u.IS_DELETED = 0
+		${ew.customSqlSegment}
+	</select>
+
+	<select id="roleList" resultType="java.lang.String">
+		select g.NAME from t_au_usr_role a
+		left join t_au_role g on a.ROLE_ID = g.OBJECT_ID
+		where g.IS_DELETED=0 and a.USR_ID=#{userId}
+	</select>
+</mapper>

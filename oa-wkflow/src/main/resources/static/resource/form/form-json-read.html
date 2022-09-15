@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>表单阅读</title>
+    <!-- css -->
+    <link rel="stylesheet" href="/oa-wkflow/formjs/cdn/element-ui/theme-chalk/index.css">
+    <!-- babel -->
+    <script src="/oa-wkflow/resource/babel/babel-browser.min.js"></script>
+    <!-- vue -->
+    <script src="/oa-wkflow/formjs/cdn/vue/vue.min.js"></script>
+    <!-- element-ui js -->
+    <script src="/oa-wkflow/formjs/cdn/element-ui/index.js"></script>
+    <!-- axios -->
+    <script src="/oa-wkflow/formjs/cdn/axios/axios.min.js"></script>
+    <!-- avue -->
+    <script src="/oa-wkflow/formjs/cdn/avue/avue.min.js"></script>
+    <style>
+	.el-select{
+		width: 100%;
+	}
+	</style>
+	<!-- jquery -->
+    <script src="/oa-wkflow/resource/js/jquery.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript">
+  	//获取地址栏参数值
+    function getUrlParam(name) {
+    	var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); // 构造一个含有目标参数的正则表达式对象
+    	var r = window.location.search.substr(1).match(reg); // 匹配目标参数
+    	if (r != null){
+    		return decodeURIComponent(r[2]);
+    	}
+    	return null; //返回参数值
+    }
+  	var formData = {};
+    function loadFormData(){
+  		var url = '/oa-wkflow/form/vals/get_json_formval?form_val_kid='+getUrlParam('form_val_kid');
+  		$.ajax({
+  			    url:url,
+  			    dataType:"json",
+  			    async:false,
+  			    type:"get",
+  			    success:function(data){
+  					if(data.code==200){
+  						formData = data.result;
+  						console.log(formData);
+  						formData.form = formData.formVals.formJson;
+  						formData.values = formData.formVals.formValsJson;
+  					}
+  			    }
+  			});
+  		
+  		var form_json_str = formData.form;
+		var form_values = formData.values;
+		console.log(form_values);
+
+		if(!form_json_str){
+			form_json_str = {};
+		}
+		if(!form_values){
+			form_values = {};
+		}
+		// console.log(form_json_str);
+		var form_json = JSON.parse(form_json_str);
+		console.log(form_json);
+		//修复一下 string -> 应该为json 的数据
+		var cloumns = form_json.column;
+		var columnsMap = {};
+		if(cloumns && cloumns.length > 0){
+			for(var i=0;i<cloumns.length;i++){
+				var column = cloumns[i];
+
+				var ctype = column.type;
+				console.log("------表单类型------"+ctype);
+				column["readonly"]=true;
+				if(ctype=='number' || ctype=='radio'){
+					column["disabled"]=true;
+				}
+				
+				columnsMap[column.prop] = column;
+				if("daterange"==column.type && column.prop){
+					console.log("-----------daterange------>" + form_values[column.prop]);
+					if(form_values[column.prop]){
+						form_values[column.prop] = JSON.parse(form_values[column.prop]);
+					}
+				}
+				if("timerange"==column.type && column.prop){
+					console.log("-----------timerange------>" + form_values[column.prop]);
+					if(form_values[column.prop]){
+						form_values[column.prop] = JSON.parse(form_values[column.prop]);
+					}
+				}
+				if("datetimerange"==column.type && column.prop){
+					console.log("-----------datetimerange------>" + form_values[column.prop]);
+					if(form_values[column.prop]){
+						form_values[column.prop] = JSON.parse(form_values[column.prop]);
+					}
+				}
+				if("select"==column.type && column.prop){
+					console.log("-----------选择------>" + form_values[column.prop]);
+					if("remote" == column.dicOption){
+						delete column.dicData;
+					}
+				}
+				if("tree"==column.type && column.prop){
+					console.log("----------tree------>" + form_values[column.prop]);
+					if("remote" == column.dicOption){
+						delete column.dicData;
+					}
+				}
+			}
+		}
+
+		//隐藏提交按钮
+		form_json.menuBtn=false;
+		formData.form = form_json;
+		formData.columnsMap = columnsMap;
+		// 初始化 表单的值
+		formData.values = JSON.parse(form_values);
+  		return formData;
+  	}
+    </script>
+
+</head>
+
+<body>
+    <div id="app">
+        <avue-form v-show="showApp" :option="option" v-model="form"></avue-form>
+    </div>
+
+<script type="text/babel">
+var formData = loadFormData();
+console.log(formData);
+var formVue = new Vue({
+        el: "#app",
+        data() {
+            return {
+                form: formData.values,
+                option: formData.form,
+				showApp : true
+            }
+        },
+        created() {
+		},
+        methods: {
+        }
+    });
+</script>
+</body>
+</html>

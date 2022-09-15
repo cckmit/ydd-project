@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>表单阅读</title>
+    <!-- css -->
+    <link rel="stylesheet" href="/oa-wkflow/formjs/cdn/element-ui/theme-chalk/index.css">
+    <!-- babel -->
+    <script src="/oa-wkflow/resource/babel/babel-browser.min.js"></script>
+    <!-- vue -->
+    <script src="/oa-wkflow/formjs/cdn/vue/vue.min.js"></script>
+    <!-- element-ui js -->
+    <script src="/oa-wkflow/formjs/cdn/element-ui/index.js"></script>
+    <!-- axios -->
+    <script src="/oa-wkflow/formjs/cdn/axios/axios.min.js"></script>
+    <!-- avue -->
+    <script src="/oa-wkflow/formjs/cdn/avue/avue.min.js"></script>
+    <style>
+        .el-select {
+            width: 100%;
+        }
+    </style>
+    <!-- jquery -->
+    <script src="/oa-wkflow/resource/js/jquery.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript">
+        //获取地址栏参数值
+        function getUrlParam(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); // 构造一个含有目标参数的正则表达式对象
+            var r = window.location.search.substr(1).match(reg); // 匹配目标参数
+            if (r != null) {
+                return decodeURIComponent(r[2]);
+            }
+            return null; //返回参数值
+        }
+    </script>
+
+</head>
+
+<body>
+    <div id="app">
+        <avue-form v-show="showApp" :option="option" v-model="form"></avue-form>
+    </div>
+
+    <script type="text/babel">
+        var formData = '@loadFormData()';
+        //获取地址栏参数值
+        function getUrlParam(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); // 构造一个含有目标参数的正则表达式对象
+            var r = window.location.search.substr(1).match(reg); // 匹配目标参数
+            if (r != null) {
+                return decodeURIComponent(r[2]);
+            }
+            return null; //返回参数值
+        }
+        var values = {};
+        function loadFormData() {
+            var url = '/oa-wkflow/form/vals/get_json_formval?form_val_kid=' + getUrlParam('form_val_kid');
+            $.ajax({
+                url: url,
+                dataType: "json",
+                async: false,
+                type: "get",
+                success: function (data) {
+                    if (data.code == 200) {
+                        values = data.result.formVals.formValsJson;
+                    }
+                }
+            });
+
+
+            // 初始化 表单的值
+            values = JSON.parse(values);
+        }
+        loadFormData();
+        formData.menuBtn = false;
+        var formVue = new Vue({
+            el: "#app",
+            data() {
+                return {
+                    form: values,
+                    option: formData,
+                    showApp: true
+                }
+            },
+            created() {
+            },
+            methods: {
+            }
+        });
+    </script>
+</body>
+
+</html>

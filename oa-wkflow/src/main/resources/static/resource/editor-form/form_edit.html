@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>源码编辑</title>
+    <script src="/oa-wkflow/resource/js/jquery.js" type="text/javascript" charset="utf-8"></script>
+</head>
+
+<body>
+    <div class="left_button">
+        <button type="button" class="button gray" id="preview" title="ctrl + b">预览</button>
+        <button type="button" class="button gray" id="submit">提交</button>
+        <button type="button" class="button gray" id="openBrower">新窗口打开</button>
+    </div>
+    <div class="left_text">
+        <textarea cols="30" rows="10" id="code">
+        </textarea>
+    </div>
+    <div class="right_ifame">
+        <iframe src="" id="iframe" class="iframe" ref="iframe">
+        </iframe>
+    </div>
+</body>
+<script>
+    document.onkeydown = (e) => {
+        //监听快捷键 ctrl + b
+        e = e || e.event;
+        if (e.ctrlKey && e.keyCode === 66) {
+            //调用预览
+            preview();
+        }
+    }
+    document.getElementById("preview").onclick = () => {
+        //点击预览触发事件
+        preview();
+    }
+    document.getElementById("submit").onclick = () => {
+        //点击提交触发事件
+        let code = document.getElementById("code");
+        var value = code.value;
+        $.ajax({
+            type: 'post',
+            url: '/oa-wkflow/form/editor/updateHtml',
+            data: {
+                html: value,
+                formId: getUrlParam("kid"),
+            	taskId: getUrlParam("task_id")
+            },
+            success: function (res) {
+                alert(res.result)
+            }
+        })
+    }
+    function preview() {
+        let code = document.getElementById("code");
+        var value = code.value;
+        var frame = document.getElementById("iframe");
+        $.ajax({
+            type: 'post',
+            url: '/oa-wkflow/form/editor/setToSession',
+            data: {
+                html: value
+            },
+            success: function (res) {
+                frame.src = '/oa-wkflow/form/editor/preview?_t=' + Math.random();
+            }
+        })
+        // 直接前台显示
+        // var framedoc = frame.contentDecument || frame.contentWindow.document;
+        // framedoc.children[0].innerHTML = value;
+    }
+    function getUrlParam(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); // 构造一个含有目标参数的正则表达式对象
+        var r = window.location.search.substr(1).match(reg); // 匹配目标参数
+        if (r != null) {
+            return decodeURIComponent(r[2]);
+        }
+        return null; //返回参数值
+    }
+    $(function () {
+        $.ajax({
+            url: '/oa-wkflow/form/editor/getFormHtml',
+            data: {
+            	formId: getUrlParam("kid"),
+            	taskId: getUrlParam("task_id")
+            },
+            success: function (res) {
+                document.getElementById("code").value = res;
+            }
+        })
+    })
+</script>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    body,
+    html {
+        background: #f0f2f5;
+        height: 100%;
+    }
+
+    /* 左侧按钮样式 */
+    .left_button {
+        position: fixed;
+        padding-top: 20%;
+        left: 0;
+        width: 5%;
+        height: 100%;
+    }
+
+    .left_button button {
+        display: block;
+        width: 100px;
+        height: 25px;
+        line-height: 1;
+        white-space: nowrap;
+        cursor: pointer;
+        border: 1px solid #DCDFE6;
+        border-radius: 2px;
+        margin-bottom: 110px;
+        transform: rotate(270deg);
+    }
+
+    .button {
+        width: 140px;
+        line-height: 38px;
+        text-align: center;
+        color: #fff;
+        text-shadow: 1px 1px 1px #333;
+        border-radius: 5px;
+        margin: 0 20px 20px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .button.gray {
+        color: #8c96a0;
+        text-shadow: 1px 1px 1px #fff;
+        border: 1px solid #dce1e6;
+        box-shadow: 0 1px 2px #fff inset, 0 -1px 0 #a8abae inset;
+        background: -webkit-linear-gradient(top, #f2f3f7, #e4e8ec);
+        background: -moz-linear-gradient(top, #f2f3f7, #e4e8ec);
+        background: linear-gradient(top, #f2f3f7, #e4e8ec);
+    }
+
+    /* 文本域样式 */
+    .left_text {
+        height: 96%;
+        width: 48%;
+        position: fixed;
+        left: 6%;
+        top: 2%;
+    }
+
+    .left_text textarea {
+        width: 100%;
+        font-size: 18px;
+        border: 2px solid #ccc;
+        overflow: auto;
+        height: 100%;
+        resize: none;
+    }
+
+    /* 右侧ifame样式 */
+    .right_ifame {
+        position: fixed;
+        width: 45%;
+        right: 10px;
+        top: 2%;
+        height: 96%;
+    }
+
+    .right_ifame iframe {
+        width: 100%;
+        height: 100%;
+        border: 2px solid;
+        border-color: #ccc;
+    }
+</style>
+
+</html>

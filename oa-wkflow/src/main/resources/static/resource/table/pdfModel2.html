@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+  <style>
+    html,
+    body {
+      /*margin: 0;*/
+      /*height: 100%;*/
+    }
+
+    #app {
+      height: 90%;
+      width:90%;
+      text-align:center;
+      margin:auto;
+      margin-top:40px;
+    }
+    .table::-webkit-scrollbar{
+      display: none;
+    }
+  </style>
+  <style>
+    ul li {
+      list-style: none;
+    }
+
+    ul {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .mp-list1 {
+      position: relative;
+      overflow: hidden;
+      z-index: 0;
+      background-color: #fff;
+    }
+
+    .mp-list1:before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      left: 100%;
+      height: 100%;
+      border-left: 1px solid black;
+      border-right: 1px solid black;
+    }
+
+    .mp-list1 li {
+      width: 100%;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-bottom: 1px solid black;
+      margin-bottom: -1px;
+      float: left;
+      position: relative;
+      box-sizing: border-box;
+      z-index: 10;
+      color: #212121;
+    }
+
+    .mp-list3 {
+      position: relative;
+      overflow: hidden;
+      z-index: 0;
+      background-color: #fff;
+    }
+
+    .mp-list3:before {
+      content: "";
+      position: absolute;
+      width: 33.3333333333%;
+      left: 33.3333333333%;
+      height: 100%;
+      border-left: 1px solid black;
+      border-right: 1px solid black;
+    }
+
+    .mp-list3 li {
+      width: 33.3333333333%;
+      height: 40px;
+      display: flex;
+      box-sizing: border-box;
+      justify-content: center;
+      align-items: center;
+      border-bottom: 1px solid black;
+      margin-bottom: -1px;
+      float: left;
+      position: relative;
+      z-index: 10;
+      color: #212121;
+    }
+
+    .mp-list2 {
+      position: relative;
+      overflow: hidden;
+      z-index: 0;
+      background-color: #fff;
+    }
+
+    .mp-list2:before {
+      content: "";
+      position: absolute;
+      width: 50%;
+      left: 50%;
+      height: 100%;
+      border-left: 1px solid black;
+      border-right: 1px solid black;
+    }
+
+    .mp-list2 li {
+      width: 50%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-bottom: 1px solid black;
+      margin-bottom: -1px;
+      float: left;
+      position: relative;
+      z-index: 10;
+      color: #212121;
+      box-sizing: border-box;
+    }
+
+    .infinite-split-table {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    .left-border {
+      border-left: 1px solid black;
+    }
+
+    .top-border {
+      border-top: 1px solid black;
+    }
+
+    .text {
+      border-right: 1px solid black;
+      border-bottom: 1px solid black;
+      height: 100%;
+      min-height: 40px;
+      display: flex;
+      overflow: hidden;
+      box-sizing: border-box;
+      text-overflow: ellipsis;
+      white-space: normal;
+      word-break: break-all;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .text input {
+      min-height: 39px;
+      height: 100%;
+      border: none;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .text textarea {
+      height: 100%;
+      border: none;
+      box-sizing: border-box;
+      width: 100%;
+      resize: none;
+    }
+
+    input:focus {
+      border: none;
+      outline: none;
+      border-width: 0;
+    }
+
+    textarea:focus {
+      border: none;
+      outline: none;
+      border-width: 0;
+    }
+
+    .cell {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      padding-bottom: 1px;
+    }
+
+    .cell span {
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+    }
+
+    .cell input {
+      width: 100%;
+    }
+
+    .sub {
+      margin-top: 5px;
+    }
+
+    tr,
+    td {
+      cursor: pointer;
+      position: relative;
+      padding: 0;
+    }
+
+    .m-select {
+      position: absolute;
+      top: -15px;
+      right: calc((100% - 33px) / 2);
+      z-index: 999;
+    }
+
+    .high {
+      box-shadow: inset 0px 0px 4px #0f82ff;
+    }
+
+    .infinite-split-table {
+      border-spacing: 0;
+    }
+
+    .list-row {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+    .list-row .list-cell {
+      width: 100%;
+      border-bottom: 1px solid black;
+      height: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      vertical-align: middle;
+    }
+    .list-row .list-cell:last-child {
+      border: none;
+    }
+    .list-row .list-cell .list-cell-item {
+      display: flex;
+      border-right: 1px solid black;
+      min-height: 40px;
+      justify-content: center;
+      align-items: center;
+      vertical-align: middle;
+    }
+    .list-row .list-cell .list-cell-item:last-child {
+      border-right: none;
+    }
+
+    .list-col {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      line-height: 100%;
+      vertical-align: middle;
+      text-align: center;
+    }
+    .list-col .list-cell {
+      width: 100%;
+      border-right: 1px solid black;
+      height: 100%;
+      justify-content: center;
+      line-height: 100%;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .list-col .list-cell:last-child {
+      border: none;
+    }
+    .list-col .list-cell .list-cell-item {
+      border-bottom: 1px solid black;
+      line-height: 100%;
+      height: 100%;
+      min-height: 40px;
+      display: flex;
+      justify-content: center;
+      text-align: center;
+      align-items: center;
+      vertical-align: middle;
+    }
+    .list-col .list-cell .list-cell-item:last-child {
+      border-bottom: none;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div id="app">
+      @content
+  </div>
+
+</body>
+
+
+</html>

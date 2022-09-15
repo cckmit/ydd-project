@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydw.oa.auth.business.doc.mapper.DocFileMapper">
+
+	<select id="query" resultType="java.util.HashMap">
+		select 
+		t.OBJECT_ID objectId,t.NAME name,t.SCOPE scope,t.CREATE_TIME createTime,t1.REAL_NAME realName,t.FILE_ID fileId,t2.NAME deptName
+		from doc_file t 
+		left join t_au_usr t1 on t.CREATE_USR_ID = t1.OBJECT_ID and t1.IS_DELETED = 0
+		left join t_au_dept t2 on t.DETP_ID = t2.OBJECT_ID and t2.IS_DELETED = 0
+		${ew.customSqlSegment}
+	</select>
+</mapper>

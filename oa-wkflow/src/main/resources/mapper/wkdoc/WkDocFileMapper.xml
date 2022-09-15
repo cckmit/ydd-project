@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydw.oa.wkflow.business_main.wkdoc.mapper.WkDocFileMapper">
+
+	<select id="query" resultType="java.util.HashMap">
+		select distinct t.OBJECT_ID objectId,t.PID pid,t.FORM_ID formId,t.CODE code,t.NAME name,t1.TYPE category,t2.REAL_NAME realName,t3.NAME deptName,
+		t.START_TIME startTime,t.IS_CREATE_PDF isCreatePdf,t.FILE_ID fileId
+		from wk_doc_file t
+		left join t_category t1 on t.CATEGORY_ID = t1.OBJECT_ID
+		left join view_t_au_usr t2 on t.USR_ID=t2.OBJECT_ID
+		left join view_t_au_dept t3 on t.DETP_ID=t3.OBJECT_ID
+		left join wk_doc_file_usr t4 on t.OBJECT_ID=t4.WK_DOC_FILE_ID
+	 	${ew.customSqlSegment}
+	</select>
+
+	<select id="queryusr" resultType="java.util.HashMap">
+		select distinct t.OBJECT_ID objectId,t.PID pid,t.FORM_ID formId,t.CODE code,t.NAME name,t1.TYPE category,t2.REAL_NAME realName,t3.NAME deptName,
+		t.START_TIME startTime,t.IS_CREATE_PDF isCreatePdf,t.FILE_ID fileId
+		from wk_doc_file t
+		left join t_category t1 on t.CATEGORY_ID = t1.OBJECT_ID
+		left join view_t_au_usr t2 on t.USR_ID=t2.OBJECT_ID
+		left join view_t_au_dept t3 on t.DETP_ID=t3.OBJECT_ID
+		left join wk_doc_file_usr t4 on t.OBJECT_ID=t4.WK_DOC_FILE_ID
+		where t.USR_ID={USR_ID}
+		ORDER BY t.CODE DESC,RIGHT(t.`CODE`,5)DESC
+		${ew.customSqlSegment}
+	</select>
+</mapper>

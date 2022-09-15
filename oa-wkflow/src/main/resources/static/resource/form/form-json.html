@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>表单提交</title>
+    <!-- css -->
+    <link rel="stylesheet" href="/oa-wkflow/formjs/cdn/element-ui/theme-chalk/index.css">
+    <!-- babel -->
+    <script src="/oa-wkflow/resource/babel/babel-browser.min.js"></script>
+    <!-- vue -->
+    <script src="/oa-wkflow/formjs/cdn/vue/vue.min.js"></script>
+    <!-- element-ui js -->
+    <script src="/oa-wkflow/formjs/cdn/element-ui/index.js"></script>
+    <!-- axios -->
+    <script src="/oa-wkflow/formjs/cdn/axios/axios.min.js"></script>
+    <!-- avue -->
+    <script src="/oa-wkflow/formjs/cdn/avue/avue.min.js"></script>
+    <style>
+	.el-select{
+		width: 100%;
+	}
+	.readonlyForm{
+		width:100%;
+		frameborder:0;
+		border:0;
+	}
+	
+	</style>
+	<!-- jquery -->
+    <script src="/oa-wkflow/resource/js/jquery.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/oa-wkflow/resource/js/html2canvas.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/oa-wkflow/resource/js/jspdf.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/oa-wkflow/resource/js/createPdf.js" type="text/javascript" charset="utf-8"></script>
+    <script src="./rejectAvanceJs.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript">
+    var formVue;
+  	//获取地址栏参数值
+    function getUrlParam(name) {
+    	var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); // 构造一个含有目标参数的正则表达式对象
+    	var r = window.location.search.substr(1).match(reg); // 匹配目标参数
+    	if (r != null){
+    		return decodeURIComponent(r[2]);
+    	}
+    	return null; //返回参数值
+    }
+  	
+  	//加载每一个表单
+  	function loadOneForm(form){
+  		console.log(form);
+		if(form.FORM_TYPE!='table'){
+	  		var iframe = "<iframe class='readonlyForm' onload='reinitIframe(this)' src='@src' ></iframe>"
+	  		var src = "/oa-wkflow/resource/form/form-read.html?form_val_kid=" + form.OBJECT_ID;
+	  		iframe = iframe.replace('@src',src);
+	  		$("#form-reads").append(iframe);
+		}
+  	}
+  	function reinitIframe(thiz){
+  		var iframe = thiz;
+        try{
+            var bHeight = iframe.contentWindow.document.body.scrollHeight;
+            var dHeight = iframe.contentWindow.document.documentElement.scrollHeight;
+            var height = Math.min(bHeight, dHeight);
+            iframe.height = height+20;
+            // console.log(iframe.height);
+        }catch (ex){
+        	console.log(ex);
+        }
+  	}
+  	//加载以往的只读表单
+	function loadFormReads(){
+		var url = '/oa-wkflow/form/vals/get_forms?task_id='+getUrlParam('task_id');
+  		$.ajax({
+  			    url:url,
+  			    dataType:"json",
+  			    // async:false,
+  			    type:"get",
+  			    success:function(data){
+ 	 				if(data.code!=200){
+  						alert('服务器正忙,请稍后再试.');			
+  						return;
+  					}
+ 	 				var formList = data.result;
+ 	 				console.log(formList);
+ 	 				if(!formList || formList.length==0){
+ 	 					return;
+ 	 				}
+ 	 				for(var i=0;i<formList.length;i++){
+						loadOneForm(formList[i]);
+ 	 				}
+  			    }
+  			});
+	}  	
+  	$(function(){
+  		loadFormReads();
+  	});
+  	
+  	var formData = {};
+    function loadFormData(){
+  		var url = '/oa-wkflow/form/json/get_json_new?task_id='+getUrlParam('task_id')+'&form_id='+getUrlParam('form_id');
+  		console.log(url)
+  		$.ajax({
+  			    url:url,
+  			    dataType:"json",
+  			    async:false,
+  			    type:"get",
+  			    success:function(data){
+  					console.log(data)
+  					if(data.code==200){
+  						formData = data.result;
+  					}
+  			    }
+  			});
+  		
+  		var form_json_str = formData.form;
+		var form_values = formData.values;
+		console.log(form_json_str, form_values);
+
+		if(!form_json_str){
+			form_json_str = {};
+		}
+		if(!form_values){
+			form_values = {};
+		}
+		// console.log(form_json_str);
+		var form_json = JSON.parse(form_json_str.json);
+		console.log(form_json);
+		//修复一下 string -> 应该为json 的数据
+		var cloumns = form_json.column;
+		var columnsMap = {};
+		if(cloumns && cloumns.length > 0){
+			for(var i=0;i<cloumns.length;i++){
+				var column = cloumns[i];
+				columnsMap[column.prop] = column;
+				console.log("------类型------"+column.type);
+				if("daterange"==column.type && column.prop){
+					console.log("-----------daterange------>" + form_values[column.prop]);
+					if(form_values[column.prop]){
+						form_values[column.prop] = JSON.parse(form_values[column.prop]);
+					}
+				}
+				if("timerange"==column.type && column.prop){
+					console.log("-----------timerange------>" + form_values[column.prop]);
+					if(form_values[column.prop]){
+						form_values[column.prop] = JSON.parse(form_values[column.prop]);
+					}
+				}
+				if("datetimerange"==column.type && column.prop){
+					console.log("-----------datetimerange------>" + form_values[column.prop]);
+					if(form_values[column.prop]){
+						form_values[column.prop] = JSON.parse(form_values[column.prop]);
+					}
+				}
+				if("select"==column.type && column.prop){
+					console.log("-----------选择------>" + form_values[column.prop]);
+					if("remote" == column.dicOption){
+						delete column.dicData;
+					}
+				}
+				if("tree"==column.type && column.prop){
+					console.log("----------tree------>" + form_values[column.prop]);
+					if("remote" == column.dicOption){
+						delete column.dicData;
+					}
+				}
+			}
+		}
+		
+		// 注入高级代码
+		form_json = rejectAdvanceJs(form_json,form_json_str.json_eval);
+
+		formData.form = form_json;
+		formData.columnsMap = columnsMap;
+		// 新改的审批单,不设置初始值
+		formData.values = JSON.parse(form_values);
+  		return formData;
+  	}
+    </script>
+
+</head>
+
+<body>
+	<div id="form-reads">
+	</div>
+    <div id="app">
+        <avue-form ref="form" :option="option" v-model="form" @submit="handleSubmit"></avue-form>
+    </div>
+
+<script type="text/babel">
+	var formData = loadFormData();
+
+	var urlSubmit = '/oa-wkflow/form/workflow/submit';
+
+formVue = new Vue({
+        el: "#app",
+        data() {
+            return {
+                form: formData.values,
+                option: formData.form
+            }
+        },
+        created() {
+		},
+        methods: {
+            handleSubmit(form, done) {
+                console.log(form);
+                let flag =false;
+                if(form && typeof form == "object"){
+                    for(let k in form){
+
+                        var ele = this.findObject(this.option.column,k);
+                        if(ele && ele.type=='dynamic' ){
+                            let v = form[k];
+                            if(this.isArray(v) && v.length==0){
+                                flag= true;
+                                this.$message.error("请填写列表数据！！");
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if(flag){
+                    done();
+                    return;
+                }
+                if (done) {
+                    this.requestSubmit(form,done);
+                } else {
+                    this.$refs.form.validate((valid, done) => {
+                        if (valid){
+                            done();
+                        }
+                    })
+                }
+            }, // handleSubmit
+            requestSubmit(form,done){
+                var thiz = this;
+                axios({
+                    method: 'post',
+                    url: urlSubmit,
+                    data: {
+                        task_id: getUrlParam('task_id'),
+                        form: JSON.stringify(form),
+                        form_id: getUrlParam('form_id')
+                    }
+                }).then(function (response) {
+                        console.log(response);
+                        if(response.data.code==200){
+                            thiz.$message.success(response.data.result);
+                            thiz.option.menuBtn = false;
+
+                            // html 转pdf
+                            // createPdf();
+
+                            // window.close();
+                            // done()
+                            //判断是否在iframe中是则关闭
+                            setTimeout(function(){
+                                window.parent.closeTaskTag();
+                            },2000);
+                            // if (window.frames.length != parent.frames.length) {
+                            // }
+                        }else{
+                            thiz.$message.error(response.message);
+                        }
+                    })
+                    .catch(function (error) {
+                        done();
+                        thiz.$message.error("服务异常!!请稍后重试！");
+                    });
+            },
+            isArray(a) {
+                return Object.prototype.toString.call(a).slice(8, -1) === "Array";
+            }
+        }
+    });
+</script>
+</body>
+</html>

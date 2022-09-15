@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>表单提交</title>
+<script src="/oa-wkflow/resource/js/jquery.js" type="text/javascript"
+	charset="utf-8"></script>
+<script type="text/javascript">
+	//获取地址栏参数值
+	function getUrlParam(name) {
+		var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); // 构造一个含有目标参数的正则表达式对象
+		var r = window.location.search.substr(1).match(reg); // 匹配目标参数
+		if (r != null) {
+			return decodeURIComponent(r[2]);
+		}
+		return null; //返回参数值
+	}
+
+	window.onload = function() {
+		$.ajax({
+			url : '/oa-wkflow/form/json/get_json_new?task_id=' + getUrlParam('task_id') + '&form_id=' + getUrlParam('form_id'),
+			dataType : "json",
+			async : false,
+			type : "get",
+			success : function(data) {
+				if (data.code == 200) {
+					var formData = data.result;
+					if(formData.form.formType=='table'){
+						// 表格的跳转路径
+						var userId = getUrlParam('user_id');
+						var userIdParam = '';
+						if(userId){
+							userIdParam = '&user_id=' + userId;
+						}
+						if(formData.form.code=='common_table'){
+							window.location.href = '/oa-wkflow/resource/table/common/index.html?task_id=' + getUrlParam('task_id') + '&form_id=' + getUrlParam('form_id') + userIdParam;
+						}else{
+							window.location.href = '/oa-wkflow/resource/table/index.html?task_id=' + getUrlParam('task_id') + '&form_id=' + getUrlParam('form_id') + userIdParam;
+						}
+					}else{
+						if(formData.form.runType=='json'){
+							window.location.href = '/oa-wkflow/resource/form/form-json.html?task_id=' + getUrlParam('task_id') + '&form_id=' + getUrlParam('form_id');
+						}else{
+							window.location.href = '/oa-wkflow/form/json/getHtml?task_id=' + getUrlParam('task_id') + '&form_id=' + getUrlParam('form_id');
+						}
+					}
+				}
+			}
+		});
+	}
+</script>
+
+</head>
+
+<body>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydw.oa.auth.business.car.mapper.CarMapper">
+
+<select id="carList" resultType="java.util.HashMap">
+		select t1.CARNO label,t1.OBJECT_ID value from t_car t1 where t1.IS_DELETED=0 and t1.STATUZ='在库'
+	</select>
+	
+</mapper>

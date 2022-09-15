@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydw.oa.auth.business.attendance.mapper.PersAttendanceLogMapper">
+    <select id="sumAttendanceLogDataByMonth" resultType="java.util.HashMap" parameterType="java.lang.String">
+			SELECT  USR_ID,MONTH,OPERATION_TYPE,SUM(SCORE) SCORE FROM pers_attendance_log
+			WHERE MONTH=#{month} AND IS_DELETED = 0 AND STATUZ = '已确认'
+			GROUP BY USR_ID,MONTH,OPERATION_TYPE
+	</select>
+	<select id="sumAttendanceLogDataByUsrIdAndMonth" resultType="java.util.HashMap" parameterType="java.lang.String">
+			SELECT  USR_ID,MONTH,OPERATION_TYPE,SUM(SCORE) SCORE FROM pers_attendance_log
+			WHERE MONTH=#{month} AND USR_ID=#{usrId} AND IS_DELETED = 0 AND STATUZ = '已确认'
+			GROUP BY USR_ID,MONTH,OPERATION_TYPE
+	</select>
+	<select id="pageAttendanceLogByStatuzAndUsrId" resultType="java.util.HashMap" parameterType="java.lang.String">
+			SELECT  t.OBJECT_ID objectId,t.MONTH month,t.DAY day,t.TYPE type,t.SCORE score,t.STATUZ statuz,t.OPERATION_TYPE operationType,t.NOTE note,t3.REAL_NAME usrName,t2.NAME deptName FROM pers_attendance_log t
+			LEFT JOIN t_au_usr_dept t1 ON t.USR_ID = t1.USR_ID
+			LEFT JOIN t_au_usr t3 ON t.USR_ID = t3.OBJECT_ID AND t3.IS_DELETED = 0
+			LEFT JOIN t_au_dept t2 ON t1.DEPT_ID = t2.OBJECT_ID AND t2.IS_DELETED = 0
+			WHERE  t.IS_DELETED = 0 AND t.STATUZ = '已上报' AND t2.USR_ID = #{usrId}
+	</select>
+	<select id="listAttendanceLogMonthByStatuzAndDeptId" resultType="com.ydw.oa.auth.business.attendance.entity.PersAttendanceLog" parameterType="java.lang.String">
+			SELECT  t.* FROM pers_attendance_log t
+			LEFT JOIN t_au_usr_dept t1 ON t.USR_ID = t1.USR_ID
+			WHERE  t.IS_DELETED = 0 AND t.MONTH = #{month} AND t.STATUZ = #{statuz} AND t1.DEPT_ID = #{deptId}
+	</select>
+</mapper>

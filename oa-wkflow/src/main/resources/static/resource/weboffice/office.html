@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>WebOffice演示程序</title>
+<style type="text/css">
+.topSide {
+	border-top-width: 1px;
+	border-right-width: 1px;
+	border-bottom-width: 1px;
+	border-left-width: 1px;
+	border-top-style: solid;
+	border-top-color: #3366CC;
+	border-right-color: #3366CC;
+	border-bottom-color: #3366CC;
+	border-left-color: #3366CC;
+}
+.leftBorder {
+	border-top-width: 1px;
+	border-right-width: 1px;
+	border-bottom-width: 1px;
+	border-left-width: 1px;
+	border-left-style: dashed;
+	border-left-color: #0066FF;
+}
+.downSide {
+	border-top-width: 1px;
+	border-right-width: 1px;
+	border-bottom-width: 1px;
+	border-left-width: 1px;
+	border-bottom-style: dashed;
+	border-bottom-color: #0066FF;
+}
+.STYLE1 {color: #FF0000}
+</style>
+<script src="/oa-wkflow/resource/js/jquery.js" type="text/javascript"></script>
+<script type="text/javascript">
+var task_id = getUrlParam('task_id');
+var key = getUrlParam('key');
+var AipObj;
+$(function(){
+	AipObj = document.getElementById('WebOffice1');
+	AipObj.ShowToolBar = 0;
+	AipObj.ShowView = 128;
+	AipObj.ShowDefMenu = 0;
+	AipObj.ShowScrollBarButton = 1;
+	AipObj.LoadOriginalFile('http://yun.eqbidding.com/oaview/office/applyofficesupplies.doc','doc');
+})
+
+//获取地址栏参数值
+function getUrlParam(name) {
+	var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); // 构造一个含有目标参数的正则表达式对象
+	var r = window.location.search.substr(1).match(reg); // 匹配目标参数
+	if (r != null) {
+		return decodeURIComponent(r[2]);
+	}
+	return null; //返回参数值
+}
+
+function save(){
+	var statuz = AipObj.Save();
+	if(AipObj.IsModify){
+		AipObj.HttpInit();			 
+		AipObj.HttpAddPostCurrFile("file", "");		
+		var returnValue = AipObj.HttpPost("http://test.bat.77bi.vip/oa-wkflow/file/file/upload");
+		if(returnValue.code==200){
+			var file_id = returnValue.result.objectId;
+			console.log(returnValue.result.objectId);
+			var data = {file_id: file_id};
+			$.ajax({
+				type:'post',
+				url:'/oa-wkflow/form/workflow/submit',
+				data:{
+					task_id:task_id,
+					form:JSON.stringify(data)
+				},
+				success:function(data){
+					console.log(data)
+					alert(data);
+				}
+			})
+		}
+	}
+}
+</SCRIPT>
+</head>
+<body>
+<button onclick="save()">确定</button>
+<script src="LoadWebOffice.js"></script>  
+</body>
+</html>

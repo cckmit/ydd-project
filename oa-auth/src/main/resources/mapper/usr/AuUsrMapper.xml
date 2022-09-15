@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydw.oa.auth.business.usr.mapper.AuUsrMapper">
+
+	<select id="userList" resultType="java.util.HashMap">
+		select t1.REAL_NAME label,t1.OBJECT_ID value from t_au_usr t1 where t1.IS_DELETED=0
+	</select>
+	
+	<select id="getReceiveUsrNames" resultType="java.lang.String">
+		select GROUP_CONCAT(REAL_NAME) name from t_au_usr where find_in_set(OBJECT_ID, #{usrIds})>0
+	</select>
+	
+	<select id="deptUserList" resultType="java.util.HashMap">
+		select t1.REAL_NAME label,t1.OBJECT_ID value from t_au_usr t1 
+		left join t_au_usr_dept t2 on t1.OBJECT_ID=t2.USR_ID
+		left join t_au_usr_dept t3 on t2.DEPT_ID=t3.DEPT_ID
+		where t1.IS_DELETED=0 and t3.USR_ID=#{usrId}
+	</select>
+	
+	<select id="getWxUsrIds" resultType="java.lang.String">
+		select WX_USER_ID from t_au_usr where find_in_set(OBJECT_ID, #{usrIds})>0
+	</select>
+	
+	<select id="driverList" resultType="java.util.HashMap">
+		select t1.REAL_NAME label,t1.OBJECT_ID value from t_au_usr t1 
+		left join t_au_usr_role t2 on t1.OBJECT_ID=t2.USR_ID
+		left join t_au_role t3 on t2.ROLE_ID=t3.OBJECT_ID
+		where t1.IS_DELETED=0 and t1.STATUS=0 and t3.NAME='司机'
+	</select>
+</mapper>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+  <script src="/oa-wkflow/resource/js/jquery.js" type="text/javascript" charset="utf-8"></script>
+  <link rel="stylesheet" href="/oa-wkflow/tablejs/designTable/table.css">
+  <style>
+    html,
+    body {
+      /*margin: 0;*/
+      /*height: 100%;*/
+    }
+
+    #app {
+      height: 90%;
+      width:90%;
+      text-align:center;
+      margin:auto;
+      margin-top:40px;
+    }
+    .table::-webkit-scrollbar{
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+
+  </div>
+
+</body>
+<script type="text/javascript">
+  //获取地址栏参数值
+  function getUrlParam(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); // 构造一个含有目标参数的正则表达式对象
+    var r = window.location.search.substr(1).match(reg); // 匹配目标参数
+    if (r != null) {
+      return decodeURIComponent(r[2]);
+    }
+    return null; //返回参数值
+  }
+
+  $(function(){
+    const pid = getUrlParam('pid');
+    const formId = getUrlParam('formId');
+    $.ajax({
+      url : '/oa-wkflow/api/wk-doc-file-html/get?pid='+pid+'&formId='+formId,
+      dataType : "json",
+      async : false,
+      type : "get",
+      success : function(data) {
+        let formData = data.result;
+        if (data.code === 200) {
+          $("#app").html(formData.htmlContent);
+        }
+      }
+    });
+
+  })
+
+</script>
+
+</html>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/oa-auth/oa-auth.iml" filepath="$PROJECT_DIR$/oa-auth/oa-auth.iml" />
+      <module fileurl="file://$PROJECT_DIR$/oa-wechat/oa-wechat.iml" filepath="$PROJECT_DIR$/oa-wechat/oa-wechat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/oa-wkflow/oa-wkflow.iml" filepath="$PROJECT_DIR$/oa-wkflow/oa-wkflow.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ydd-project(yun).iml" filepath="$PROJECT_DIR$/.idea/ydd-project(yun).iml" />
+    </modules>
+  </component>
+</project>

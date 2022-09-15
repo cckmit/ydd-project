@@ -1,0 +1,77 @@
+wkfow:
+  auth: oa-auth
+  wkflow: oa-wkflow
+spring:
+  application:
+    name: oa-wechat
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://test.eqbidding.com:3306/oa-wechat?nullCatalogMeansCurrent=true&serverTimezone=Asia/Shanghai&useSSL=false&characterEncoding=utf-8
+    username: fxd
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+  #redis
+  redis:
+    host: 192.168.0.199
+    port: 6379
+    password: zk900319
+    timeout: 6000ms       # 连接超时时间（毫秒）
+    jedis:
+      pool:
+        max-active: 200   # 连接池最大连接数（使用负值表示没有限制）
+        max-wait: -1      # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-idle: 10      # 连接池中的最大空闲连接
+        min-idle: 0       # 连接池中的最小空闲连接
+## Mybatis
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*Mapper.xml
+  global-config:
+    # 关闭MP3.0自带的banner
+    banner: false
+    db-config:
+      #      logic-delete-field: status  #全局逻辑删除字段值 3.3.0开始支持。（因为部分表不需要逻辑删除，所以在所有model的父类中添加了@TableLogic注解，若不需要逻辑删除的类则无需继承该父类）
+      logic-delete-value: 1 # 逻辑已删除值(默认为 1)
+      logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
+      #主键类型  0:"数据库ID自增",1:"该类型为未设置主键类型", 2:"用户输入ID",3:"全局唯一ID (数字类型唯一ID)", 4:"全局唯一ID UUID",5:"字符串全局唯一ID (idWorker 的字符串表示)";
+      id-type: 0
+      # 默认数据库表下划线命名
+      table-underline: true
+
+
+server:
+  port: 18310
+  tomcat:
+    uri-encoding: UTF-8
+  servlet:
+    context-path: /oa-wechat
+logging:
+  level:
+    root: info
+    org.springfromework.web: info
+    org.hibernate: info
+eureka:
+  client:
+    serviceUrl:
+#      defaultZone: http://yun.eqbidding.com:16000/eureka/
+      defaultZone: http://192.168.0.199:9001/eureka/
+
+##Fegin
+corp:
+  url: http://localhost:9820
+
+## ribbon
+ribbon:
+  ConnectTimeout: 60000
+  ReadTimeout: 60000
+
+#weixin
+weixin:
+  #corp
+  corp:
+    corpid: ww4b055f3bec10790d
+    agentid: 1000005
+    notice-agentid: 1000006

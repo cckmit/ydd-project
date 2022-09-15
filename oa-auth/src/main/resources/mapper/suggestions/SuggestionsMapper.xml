@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydw.oa.auth.business.suggestions.mapper.SuggestionsMapper">
+<select id="suggestionsquery" resultType="java.util.HashMap">
+		select 
+		S.OBJECT_ID,S.IMG,S.NOTE,S.URL,S.CREATED_TIME,U.USR_NAME 
+		FROM t_suggestions S
+		LEFT JOIN t_au_usr U ON S.USERID=U.OBJECT_ID
+		${ew.customSqlSegment}  
+	</select>
+</mapper>
+ 
